@@ -14,7 +14,7 @@ is not ✅.
 | 4 | Result card, streaks, leaderboard, flair, share, subscribe | ✅ |
 | 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ✅ |
 | 6 | Print Shop and Community Sunday | ✅ |
-| 7 | Gallery Wall and archive | ⏳ |
+| 7 | Gallery Wall and archive | ✅ |
 | 8 | Polish and compliance pass (reviewer + judge) | ⏳ |
 | 9 | Launch kit (README, SUBREDDIT, icon/banner, DEVPOST) | ⏳ |
 
@@ -95,6 +95,15 @@ is not ✅.
 - `print:{id}`, `prints:week:{isoWeek}` (score = upvotes×1000 + solves, refreshed on each solve).
   Saturday's scheduler run picks Sunday's daily (`sunday:{date}`), the maker gets
   "🎨 Featured Printer" flair. Shop is linked from the splash and the result card.
+
+### Phase 7
+- `wall:{YYYY-MM}` hash: field `DD` = frame (date, number, maker, size, target, url), `DD:solves`
+  counter (incremented on each counted solve), `DD:post`; `wall:months` zset. Frames are hung when a
+  daily is created and removed if that post is deleted.
+- `GET /api/gallery?month=` and the `gallery` entry point: month poster (3 / 5 / 7 columns), framed
+  lite riso thumbnails with #, maker and ✓solves, today ringed, blank dashed frames for days with no
+  print, month switcher, memoised frames. Tapping a frame `navigateTo`s its post.
+- Old dailies show "From the archive · doesn't affect your streak" and never touch the streak.
 
 ## Decisions
 

@@ -8,6 +8,7 @@ import type {
   Prefs,
   PrefsResponse,
   PuzzleResponse,
+  GalleryResponse,
   ShareResponse,
   ShopInfoResponse,
   ShopPostResponse,
@@ -37,6 +38,8 @@ import { puzzleKey } from '../../shared/postdata';
 import { shareCommentText } from '../../shared/share';
 import { DAILY_POST_LIMIT, parseShopStamps } from '../../shared/community';
 import { postCommunityPrint, postedToday } from '../core/community';
+import { readWall } from '../core/wall';
+import { decodeTarget } from '../../shared/postdata';
 import { isCommentId, isPostId } from '../core/ids';
 
 export const api = new Hono();
@@ -375,5 +378,44 @@ api.post('/shop/post', async (c) => {
       500,
       'The press jammed posting your print. Nothing was posted.'
     );
+  }
+});
+
+api.get('/gallery', async (c) => {
+  try {
+    const today = utcDateOf(nowMs());
+    const requested = c.req.query('month') ?? '';
+    const month = /^\d{4}-\d{2}$/.test(requested)
+      ? requested
+      : today.slice(0, 7);
+    const wall = await readWall(month, today.slice(0, 7));
+    const days: GalleryResponse['days'] = Array.from(
+      { length: wall.length },
+      () => null
+    );
+    for (const frame of wall.days) {
+      if (frame.day < 1 || frame.day > wall.length) continue;
+      days[frame.day - 1] = {
+        day: frame.day,
+        date: frame.date,
+        number: frame.number,
+        maker: frame.maker,
+        solves: frame.solves,
+        size: frame.size,
+        target: decodeTarget(frame.target, frame.size),
+        url: frame.url,
+        isToday: frame.date === today,
+      };
+    }
+    return c.json<GalleryResponse>({
+      status: 'ok',
+      month,
+      today,
+      months: wall.months,
+      days,
+    });
+  } catch (error) {
+    console.error('GET /api/gallery', error);
+    return fail(c, 500, 'Could not load the Gallery Wall.');
   }
 });
