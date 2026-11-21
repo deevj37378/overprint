@@ -10,7 +10,7 @@ is not ✅.
 | 0 | Housekeeping: Dependabot, no-repeat prints | ✅ (PR closing blocked, see Known issues) |
 | A | Local preview harness (`npm run preview:local`) | ✅ |
 | 2 | Game screen and riso look | ✅ |
-| 3 | Server, daily post, scheduler, sticky, splash | ⏳ |
+| 3 | Server, daily post, scheduler, sticky, splash | ✅ |
 | 4 | Result card, streaks, leaderboard, flair, share, subscribe | ⏳ |
 | 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ⏳ |
 | 6 | Print Shop and Community Sunday | ⏳ |
@@ -44,6 +44,21 @@ is not ✅.
 - `src/client/game/GameScreen.tsx`: layout (phone stacked; ≥1024px two columns), keyboard, print-run
   win animation. Fonts: Bricolage Grotesque + DM Mono via @fontsource (bundled).
 
+### Phase 3
+- Server (`src/server`): `core/` (keys, puzzles cache, idempotent `createDailyPost` with sticky
+  "Share your print here 👇" comment, solves, streaks, flair, wall frames, users) and routes:
+  `GET /api/puzzle|me|splash|leaderboard`, `POST /api/start|solve|share|subscribe|prefs`,
+  menu `post-create` + `post-for-date` (form `postForDate`), scheduler `daily-post` (cron 0 0 * * *),
+  triggers `onAppInstall` (creates today's daily) and `onPostDelete` (cleans the post's keys).
+- The server never trusts the client: re-verifies placements, takes the time from `/api/start`
+  (first pick-up) + 2 s slack, and only the first solve counts. Solution never leaves the server.
+- Pre-launch: dates before 2026-12-01 are served as "Preview" (number null), never throwing.
+- Splash (`splash.tsx`) renders from post data instantly (title, number, preview), then fetches
+  `/api/splash` for "N printed today", streak and your result. No engine code in the client bundles.
+- Harness test helpers: "Add 6 fake players", "Mark me solved", "First-ever play".
+- (The streak/flair/share/subscribe server code landed here because `recordSolve` needs it;
+  the result card UI is Phase 4.)
+
 ## Decisions
 
 - **devvit-mcp was unreachable** (connection timeout) for this whole run. Every Devvit API was checked
@@ -52,6 +67,12 @@ is not ✅.
 - Lifts also count each Clear of a non-empty sheet (spec counts lifts + undos; clear is a mass lift).
 - Ghost placement: the tapped cell is always covered; if the stamp's anchor would fall off the paper
   the ghost shifts to the nearest fitting position that still covers the tapped cell.
+- Leaderboard score = time in ms + 10 000 per lift (lower is better). Written in OVERPRINT.md.
+- Streak grace: yesterday's daily still counts for 15 minutes after midnight UTC (mid-game rollover).
+- "Join the print shop" can't read real subscription state (that API needs Reddit approval as user),
+  so we remember that the user joined through the app and hide the button after that.
+- Devvit 0.15.4 has no account-deletion trigger; per-user daily keys expire after 90 days, and
+  leaderboards (which hold user ids) expire after 90 days too. Noted in Known issues.
 - Kept the spec's 30% minimum coverage and mixed-cell minimums unchanged (prints are compact as a result).
 
 ## Known issues / for the user

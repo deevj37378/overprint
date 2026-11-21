@@ -116,9 +116,86 @@ const sendJson = (
 const devvitConfig = (): unknown =>
   JSON.parse(readFileSync(path.join(root, 'devvit.json'), 'utf8'));
 
+const ACTIONS = [
+  { id: 'seed', label: 'Add 6 fake players' },
+  { id: 'solve', label: 'Mark me solved' },
+  { id: 'first-play', label: 'First-ever play' },
+];
+
+const SEED_NAMES = [
+  'ink_blot',
+  'misregistered',
+  'halftone_hal',
+  'duotone_dee',
+  'pressroom_pat',
+  'kraft_paper',
+];
+
+type PuzzleModule = {
+  currentPostData: () => Promise<unknown>;
+  loadPuzzleFor: (
+    data: unknown
+  ) => Promise<{ puzzle: { solution: unknown[] } } | null>;
+};
+
+/** Solve the current post's puzzle as someone, through the real /api/solve. */
+const solveAs = async (
+  server: ViteDevServer,
+  user: FakeUser,
+  postId: string | null,
+  timeMs: number,
+  lifts: number
+) => {
+  previewState().request = { user, postId };
+  const mod: Partial<PuzzleModule> = await server.ssrLoadModule(
+    '/src/server/core/puzzles.ts'
+  );
+  if (!mod.currentPostData || !mod.loadPuzzleFor) return;
+  const data = await mod.currentPostData();
+  if (!data) return;
+  const loaded = await mod.loadPuzzleFor(data);
+  if (!loaded) return;
+  // No /api/start for fake players, so the server takes their reported time (within limits).
+  await callApp(
+    server,
+    'POST',
+    '/api/solve',
+    JSON.stringify({ placements: loaded.puzzle.solution, timeMs, lifts }),
+    {
+      user,
+      postId,
+    }
+  );
+};
+
+const runAction = async (
+  server: ViteDevServer,
+  id: string,
+  jar: Map<string, string>
+) => {
+  const postId = postFrom(jar);
+  const me = userFrom(jar);
+  if (id === 'seed') {
+    for (const [i, name] of SEED_NAMES.entries()) {
+      await solveAs(
+        server,
+        { id: `t2_seed${i}`, name },
+        postId,
+        25_000 + i * 17_000,
+        i % 3
+      );
+    }
+  } else if (id === 'solve' && me) {
+    await solveAs(server, me, postId, 48_000, 1);
+  } else if (id === 'first-play' && me) {
+    previewState().redis.delete(`user:${me.id}`);
+  }
+};
+
 const harnessState = (jar: Map<string, string>) => {
   const state = previewState();
   return {
+    actions: ACTIONS,
     config: devvitConfig(),
     fakeDate: state.fakeDate,
     realDate: new Date().toISOString().slice(0, 10),
@@ -169,6 +246,11 @@ const handleHarness = async (
     return sendJson(res, 200, harnessState(jar));
   }
   if (route === '/state') return sendJson(res, 200, harnessState(jar));
+
+  if (route === '/action') {
+    await runAction(server, String(body.id ?? ''), jar);
+    return sendJson(res, 200, harnessState(jar));
+  }
 
   if (route === '/reset') {
     resetPreviewState();

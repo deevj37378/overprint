@@ -72,6 +72,8 @@ A daily riso-print puzzle: layer coloured ink stamps so their overlaps recreate 
 - **Clean print ✦:** solved with zero lifts.
 - The server **re-verifies** every solve: it regenerates the day's target and checks the submitted placements. Never trust a client "I won".
 - Only the first solve of a day counts for the leaderboard and the streak. Replays are allowed, just not counted.
+- **Leaderboard score** = solve time in ms + 10,000 ms per lift (lower is better; a lift costs 10 seconds).
+  The server clamps the reported time to what it observed since the first pick-up (+2 s).
 
 ## Daily loop and Reddit integration
 
