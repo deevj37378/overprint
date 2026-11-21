@@ -76,7 +76,7 @@ export const Tutorial = ({ colourBlind, onDone, onCommand }: Props) => {
   }, [state.solvedAt]);
 
   return (
-    <div className="paper-grain flex min-h-dvh flex-col bg-paper text-ink">
+    <div className="paper-grain flex h-dvh flex-col overflow-hidden bg-paper text-ink">
       <header className="flex items-center justify-between px-4 pt-3">
         <Wordmark className="text-[26px]" />
         <button
@@ -87,8 +87,8 @@ export const Tutorial = ({ colourBlind, onDone, onCommand }: Props) => {
           Skip
         </button>
       </header>
-      <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col gap-4 px-4 pt-3 pb-4">
-        <div className="flex items-center gap-3">
+      <main className="mx-auto flex min-h-0 w-full max-w-[420px] flex-1 flex-col gap-3 px-4 pt-2 pb-[max(12px,env(safe-area-inset-bottom))]">
+        <div className="flex shrink-0 items-center gap-3">
           <div className="relative w-[64px] shrink-0 rounded-md bg-[#fbf8f2] p-1 ring-1 ring-paper-edge">
             <PrintSheet
               size={3}
@@ -101,21 +101,23 @@ export const Tutorial = ({ colourBlind, onDone, onCommand }: Props) => {
             Practice print. Make your paper match the proof.
           </p>
         </div>
-        <Paper
-          state={state}
-          dispatch={dispatch}
-          colourBlind={colourBlind}
-          label="Practice paper"
-          className="mx-auto w-full max-w-[300px]"
-        />
+        <div className="flex min-h-0 flex-1 items-center [container-type:size]">
+          <Paper
+            state={state}
+            dispatch={dispatch}
+            colourBlind={colourBlind}
+            label="Practice paper"
+            className="mx-auto w-[min(100cqw,100cqh,300px)]"
+          />
+        </div>
         <p
-          className="slide-up min-h-12 rounded-xl bg-riso-yellow/70 px-3 py-2.5 text-center text-[16px] font-extrabold mix-blend-multiply"
+          className="slide-up min-h-12 shrink-0 rounded-xl bg-riso-yellow/70 px-3 py-2.5 text-center text-[16px] font-extrabold mix-blend-multiply"
           key={step.hint}
           aria-live="polite"
         >
           {step.hint}
         </p>
-        <div className="mt-auto flex flex-col gap-3">
+        <div className="flex shrink-0 flex-col gap-2">
           <Tray state={state} dispatch={dispatch} highlight={step.highlight} />
           <Controls state={state} dispatch={dispatch} />
         </div>

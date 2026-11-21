@@ -145,6 +145,23 @@ Splash payload: ~85 KB gz JS+CSS (React + renderer), fonts are local woff2 with 
 - [ ] Record the 50-second video (DEVPOST.md), fill in the Devpost form, and the Devvit feedback survey.
 - [ ] Submit by Tue Dec 8, 6 pm PT (Wed Dec 9, 7:30 am IST).
 
+### Fix round (after Phase 9)
+- Game and tutorial fit the viewport with no scrolling below 1024px: `h-dvh` column, the paper is
+  the largest square in the leftover space (`min(100cqw, 100cqh)` container units). Measured with no
+  scroll at 390×640 / 700 / 844 and 320×568 (paper 267 / 317 / 362 / 206 px).
+- Proof card scales with height, `clamp(84px, 17dvh, 138px)` (138 = 150% of the old 92 px); the
+  PROOF tag sits in the card's top margin, never over the print.
+- Print Shop: intro moved below the post button, tighter gaps, paper sized `100dvh − 404px`
+  (208–420 px). Paper + inks + palette + controls fit 390×700 (and 640). Live stats now count
+  ink before the print is valid.
+- Splash: explainer line "Layer ink stamps to match today's print" (hidden on very short cards
+  once solved, with a minimum preview size). Streak chip spacing fixed.
+- Result card: "Gallery Wall" label, no-wrap buttons that stack if a screen is too narrow.
+- Gallery thumbnails use the full riso renderer (multiply, misregistration, rough edges);
+  31 frames scroll at 60 fps (p95 17 ms) in headless Chrome.
+- Viewport meta no longer blocks zoom (`maximum-scale`/`user-scalable` removed); buttons keep
+  `touch-action: manipulation` so double-tap doesn't zoom during play.
+
 ## Decisions
 
 - **devvit-mcp was unreachable** (connection timeout) for this whole run. Every Devvit API was checked

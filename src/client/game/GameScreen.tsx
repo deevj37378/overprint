@@ -132,7 +132,7 @@ export const GameScreen = ({
   const elapsed = state.startedAt === null ? 0 : now - state.startedAt;
 
   return (
-    <div className="paper-grain flex min-h-dvh flex-col bg-paper text-ink">
+    <div className="paper-grain flex h-dvh flex-col overflow-hidden bg-paper text-ink lg:h-auto lg:min-h-dvh lg:overflow-visible">
       <header className="flex items-center gap-2 px-3 pt-2.5 pb-1 lg:px-6 lg:pt-4">
         <div className="flex min-w-0 flex-1 items-baseline gap-3">
           <span className="hidden lg:block">
@@ -155,10 +155,11 @@ export const GameScreen = ({
         <div className="flex items-center">{headerTools}</div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1080px] flex-1 flex-col gap-3 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:content-start lg:gap-x-8 lg:gap-y-5 lg:px-6 lg:pt-4">
-        <section className="flex items-center gap-3 lg:order-2 lg:flex-col lg:items-stretch lg:gap-4">
-          <div className="relative shrink-0 rounded-[10px] bg-[#fbf8f2] p-1.5 shadow-[0_1px_0_#d6cab5,0_8px_16px_-12px_rgba(60,40,20,0.5)] ring-1 ring-paper-edge lg:p-3">
-            <span className="absolute -top-2 left-2 rotate-[-4deg] rounded-sm bg-riso-pink px-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-ink lg:text-[11px]">
+      <main className="mx-auto flex min-h-0 w-full max-w-[1080px] flex-1 flex-col gap-2.5 px-3 pb-[max(10px,env(safe-area-inset-bottom))] lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:content-start lg:gap-x-8 lg:gap-y-5 lg:px-6 lg:pt-4">
+        <section className="flex shrink-0 items-center gap-3 lg:order-2 lg:flex-col lg:items-stretch lg:gap-4">
+          <div className="relative shrink-0 rounded-[10px] bg-[#fbf8f2] px-1.5 pt-[18px] pb-1.5 shadow-[0_1px_0_#d6cab5,0_8px_16px_-12px_rgba(60,40,20,0.5)] ring-1 ring-paper-edge lg:px-3 lg:pt-7 lg:pb-3">
+            {/* The tag sits in the card's top margin, never over the print. */}
+            <span className="absolute top-[3px] left-1.5 rotate-[-3deg] rounded-sm bg-riso-pink px-1.5 text-[10px] leading-[13px] font-extrabold uppercase tracking-[0.14em] text-ink lg:top-1.5 lg:left-3 lg:text-[11px] lg:leading-4">
               Proof
             </span>
             <PrintSheet
@@ -166,7 +167,7 @@ export const GameScreen = ({
               sheet={puzzle.target}
               colourBlind={colourBlind}
               label="Target print to match"
-              className="w-[92px] max-[359px]:w-[72px] lg:w-full"
+              className="w-[clamp(84px,17dvh,138px)] max-[359px]:w-[clamp(72px,15dvh,110px)] lg:w-full"
             />
           </div>
           <div className="min-w-0 flex-1 lg:flex-none">
@@ -184,26 +185,29 @@ export const GameScreen = ({
           </div>
         </section>
 
-        <section className="relative lg:order-1 lg:row-span-2">
+        <section className="relative flex min-h-0 flex-1 flex-col lg:order-1 lg:row-span-2 lg:flex-none">
           {banner}
-          <div className="relative mx-auto w-full max-w-[min(100%,560px)] overflow-hidden rounded-[8px] p-0.5">
-            <div className={running ? 'print-run' : ''}>
-              <Paper
-                state={state}
-                dispatch={dispatch}
-                colourBlind={colourBlind}
-              />
+          {/* Phone/tablet: the paper is the largest square that fits the space left over. */}
+          <div className="flex min-h-0 flex-1 items-center [container-type:size] lg:block lg:flex-none lg:[container-type:normal]">
+            <div className="relative mx-auto aspect-square w-[min(100cqw,100cqh)] overflow-hidden rounded-[8px] p-0.5 lg:w-full lg:max-w-[560px]">
+              <div className={running ? 'print-run' : ''}>
+                <Paper
+                  state={state}
+                  dispatch={dispatch}
+                  colourBlind={colourBlind}
+                />
+              </div>
+              {running && (
+                <div
+                  aria-hidden="true"
+                  className="roller pointer-events-none absolute inset-x-0 top-0 h-3 rounded-full bg-gradient-to-b from-[#3a302a] to-[#120d0a] opacity-80"
+                />
+              )}
             </div>
-            {running && (
-              <div
-                aria-hidden="true"
-                className="roller pointer-events-none absolute inset-x-0 top-0 h-3 rounded-full bg-gradient-to-b from-[#3a302a] to-[#120d0a] opacity-80"
-              />
-            )}
           </div>
         </section>
 
-        <section className="mt-auto flex flex-col gap-3 lg:order-3 lg:col-start-2 lg:mt-0">
+        <section className="flex shrink-0 flex-col gap-2 lg:order-3 lg:col-start-2 lg:gap-3">
           <p
             className="min-h-5 text-center text-[13px] font-semibold text-muted"
             aria-live="polite"

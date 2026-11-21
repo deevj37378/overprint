@@ -172,20 +172,6 @@ export const checkPrint = (
   const none = { target: null, mixed: 0, inkedFraction: 0 };
   if (!SHOP_SIZES.some((s) => s === size))
     return { ok: false, reason: 'Pick a 5×5, 6×6 or 7×7 sheet.', ...none };
-  if (stamps.length < MIN_SHOP_STAMPS) {
-    return {
-      ok: false,
-      reason: `Press at least ${MIN_SHOP_STAMPS} stamps.`,
-      ...none,
-    };
-  }
-  if (stamps.length > MAX_SHOP_STAMPS) {
-    return {
-      ok: false,
-      reason: `Use at most ${MAX_SHOP_STAMPS} stamps.`,
-      ...none,
-    };
-  }
   const { tray, placements } = toTray(stamps);
   const applied = applyPlacements(size, tray, placements);
   if (!applied.ok)
@@ -194,6 +180,7 @@ export const checkPrint = (
       reason: 'Every stamp must sit fully on the paper.',
       ...none,
     };
+  // Measure the paper first, so the live stats are right even while the print isn't valid yet.
   const target = applied.sheet;
   const mixed = countMixed(target);
   const inkedFraction = countInked(target) / (size * size);
@@ -204,6 +191,10 @@ export const checkPrint = (
     mixed,
     inkedFraction,
   });
+  if (stamps.length < MIN_SHOP_STAMPS)
+    return fail(`Press at least ${MIN_SHOP_STAMPS} stamps.`);
+  if (stamps.length > MAX_SHOP_STAMPS)
+    return fail(`Use at most ${MAX_SHOP_STAMPS} stamps.`);
 
   for (let i = 0; i < stamps.length; i++) {
     for (let j = i + 1; j < stamps.length; j++) {

@@ -44,6 +44,13 @@ test('a good print passes', () => {
   assert.ok(check.mixed >= 2);
 });
 
+test('live stats are measured even before a print is valid', () => {
+  const one = checkPrint(5, [blueP]);
+  assert.equal(one.ok, false);
+  assert.equal(one.inkedFraction, 5 / 25);
+  assert.equal(one.mixed, 0);
+});
+
 test('friendly reasons for each rule', () => {
   const reason = (size: number, stamps: ShopStamp[]) => {
     const c = checkPrint(size, stamps);

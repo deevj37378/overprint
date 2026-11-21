@@ -64,8 +64,16 @@ export const Splash = () => {
           {label}
         </span>
       </header>
+      <p
+        className={`-mt-1 w-full text-left text-[14px] leading-snug font-semibold text-muted ${
+          solved ? '[@media(max-height:380px)]:hidden' : ''
+        }`}
+      >
+        Layer ink stamps to match{' '}
+        {data?.kind === 'community' ? 'this' : 'today’s'} print.
+      </p>
 
-      <div className="flex min-h-0 flex-1 items-center justify-center py-1">
+      <div className="flex min-h-[88px] flex-1 items-center justify-center py-1">
         {data ? (
           <div className="relative h-full max-h-[200px] rotate-[-2deg] rounded-[8px] bg-[#fbf8f2] p-2 shadow-[0_14px_24px_-16px_rgba(60,40,20,0.65)] ring-1 ring-paper-edge">
             <span className="absolute -top-2 -right-2 z-10 rotate-[6deg] rounded-sm bg-riso-yellow px-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] mix-blend-multiply">
@@ -109,7 +117,10 @@ export const Splash = () => {
           </Stat>
           {info?.streak && info.streak.current > 0 && (
             <Stat>
-              🔥 <span className="num">{info.streak.current}</span>-day streak
+              🔥{' '}
+              <span>
+                <span className="num">{info.streak.current}</span>-day streak
+              </span>
             </Stat>
           )}
         </div>
@@ -129,7 +140,7 @@ export const Splash = () => {
             >
               See your result
             </button>
-            <p className="text-[13px] text-muted">
+            <p className="text-[13px] text-muted [@media(max-height:380px)]:hidden">
               {data?.kind === 'community'
                 ? 'Nice printing.'
                 : 'Come back tomorrow for a new print.'}

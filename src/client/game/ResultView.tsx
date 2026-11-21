@@ -243,14 +243,14 @@ export const ResultView = ({
               {shared ? 'Shared to comments ✓' : 'Share to comments'}
             </button>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {me.loggedIn && !subscribed && (
               <button
                 type="button"
                 data-testid="join"
                 disabled={joining}
                 onClick={() => void join()}
-                className="min-h-12 flex-1 rounded-full border-2 border-ink bg-[#fbf8f2] px-3 text-[15px] font-bold active:scale-[0.98]"
+                className="min-h-12 flex-1 basis-[150px] whitespace-nowrap rounded-full border-2 border-ink bg-[#fbf8f2] px-3 text-[15px] font-bold active:scale-[0.98]"
               >
                 {joining ? 'Joining…' : 'Join the print shop'}
               </button>
@@ -259,9 +259,9 @@ export const ResultView = ({
               type="button"
               data-testid="gallery"
               onClick={(e) => requestExpandedMode(e.nativeEvent, 'gallery')}
-              className="min-h-12 flex-1 rounded-full border-2 border-ink bg-[#fbf8f2] px-3 text-[15px] font-bold active:scale-[0.98]"
+              className="min-h-12 flex-1 basis-[150px] whitespace-nowrap rounded-full border-2 border-ink bg-[#fbf8f2] px-3 text-[15px] font-bold active:scale-[0.98]"
             >
-              See the Gallery Wall
+              Gallery Wall
             </button>
           </div>
         </section>

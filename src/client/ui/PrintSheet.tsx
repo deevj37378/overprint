@@ -29,7 +29,10 @@ export type BloomView = {
 type Props = {
   size: number;
   sheet: Sheet;
+  /** Skip the rough-edge/speckle filter (thumbnails). */
   lite?: boolean;
+  /** Offset each ink a hair, like a loose drum. Defaults to on unless `lite`. */
+  misregister?: boolean;
   colourBlind?: boolean;
   ghost?: GhostView | null;
   bloom?: BloomView | null;
@@ -79,6 +82,7 @@ export const PrintSheet = ({
   size,
   sheet,
   lite = false,
+  misregister = !lite,
   colourBlind = false,
   ghost = null,
   bloom = null,
@@ -132,7 +136,9 @@ export const PrintSheet = ({
             className="absolute inset-0 h-full w-full"
             style={{
               mixBlendMode: 'multiply',
-              transform: lite ? undefined : `translate(${m.x}px, ${m.y}px)`,
+              transform: misregister
+                ? `translate(${m.x}px, ${m.y}px)`
+                : undefined,
             }}
             aria-hidden="true"
           >

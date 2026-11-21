@@ -76,7 +76,7 @@ const Frame = memo(function Frame({
           <PrintSheet
             size={frame.size}
             sheet={frame.target}
-            lite
+            misregister
             colourBlind={colourBlind}
             label=""
           />

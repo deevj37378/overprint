@@ -154,11 +154,11 @@ const Editor = ({
         dispatch={dispatch}
         colourBlind={colourBlind}
         label="Your print"
-        className="mx-auto w-full max-w-[420px]"
+        className="mx-auto w-[min(100%,max(208px,calc(100dvh_-_404px)),420px)]"
       />
 
       <p
-        className={`rounded-xl px-3 py-2 text-center text-[14px] font-semibold ${
+        className={`rounded-xl px-3 py-1.5 text-center text-[13px] leading-snug font-semibold ${
           check.ok ? 'bg-[#cfe9d3]' : 'bg-paper-deep'
         }`}
         aria-live="polite"
@@ -169,12 +169,12 @@ const Editor = ({
             ? '✓ Ready to print. Give it a name below.'
             : check.reason}
       </p>
-      <p className="-mt-2 text-center text-[12px] text-muted num">
+      <p className="-mt-1 text-center text-[11px] text-muted num">
         {stamps.length}/{MAX_SHOP_STAMPS} stamps · {check.mixed} mixed ·{' '}
         {Math.round(check.inkedFraction * 100)}% inked
       </p>
 
-      <section aria-label="Pick a stamp" className="flex flex-col gap-2">
+      <section aria-label="Pick a stamp" className="flex flex-col gap-1.5">
         <div
           className="flex items-center justify-center gap-2"
           role="radiogroup"
@@ -210,13 +210,13 @@ const Editor = ({
               data-testid={`shape-${shape}`}
               aria-label={`Pick up a ${INK_NAME[ink].toLowerCase()} ${SHAPE_NAME[shape]} stamp`}
               onClick={() => pickShape(shape)}
-              className={`flex h-14 items-center justify-center rounded-xl border-2 bg-[#fbf8f2] active:scale-95 ${
+              className={`flex h-12 items-center justify-center rounded-xl border-2 bg-[#fbf8f2] active:scale-95 ${
                 held?.shape === shape && held.ink === ink
                   ? 'border-ink'
                   : 'border-paper-edge'
               }`}
             >
-              <StampFace shape={shape} ink={ink} size={34} />
+              <StampFace shape={shape} ink={ink} size={30} />
             </button>
           ))}
         </div>
@@ -280,6 +280,11 @@ const Editor = ({
             : `${remaining} of ${info.dailyLimit} posts left today`}
         </p>
       )}
+
+      <p className="text-center text-[13px] leading-snug text-muted">
+        Make a print for everyone to solve: press 2–6 stamps, overlapping inks
+        mix. Your placements are the solution, so every print is solvable.
+      </p>
 
       {confirming && (
         <ConfirmPost
@@ -429,16 +434,12 @@ export const ShopScreen = ({
   const [generation, setGeneration] = useState(0);
   return (
     <div className="paper-grain min-h-dvh bg-paper text-ink">
-      <header className="flex items-center gap-2 px-4 pt-3">
+      <header className="flex items-center gap-2 px-4 pt-2">
         <Wordmark className="text-[26px]" text="Print Shop" />
         <span className="flex-1" />
         {headerTools}
       </header>
-      <main className="mx-auto flex w-full max-w-[480px] flex-col gap-3 px-4 pt-2 pb-8">
-        <p className="text-[14px] leading-snug text-muted">
-          Make a print for everyone to solve. Press 2–6 stamps; overlapping inks
-          mix.
-        </p>
+      <main className="mx-auto flex w-full max-w-[480px] flex-col gap-2 px-4 pt-2 pb-8">
         <div
           className="flex gap-1.5 rounded-full bg-paper-deep/70 p-1"
           role="radiogroup"
@@ -454,7 +455,7 @@ export const ShopScreen = ({
                 setSize(s);
                 setGeneration((g) => g + 1);
               }}
-              className={`min-h-11 flex-1 rounded-full text-[15px] font-bold num ${size === s ? 'bg-ink text-paper' : ''}`}
+              className={`min-h-11 flex-1 rounded-full text-[14px] font-bold num ${size === s ? 'bg-ink text-paper' : ''}`}
             >
               {s}×{s}
             </button>
