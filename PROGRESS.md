@@ -9,7 +9,7 @@ is not ✅.
 |---|---|---|
 | 0 | Housekeeping: Dependabot, no-repeat prints | ✅ (PR closing blocked, see Known issues) |
 | A | Local preview harness (`npm run preview:local`) | ✅ |
-| 2 | Game screen and riso look | ⏳ |
+| 2 | Game screen and riso look | ✅ |
 | 3 | Server, daily post, scheduler, sticky, splash | ⏳ |
 | 4 | Result card, streaks, leaderboard, flair, share, subscribe | ⏳ |
 | 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ⏳ |
@@ -34,11 +34,24 @@ is not ✅.
 - Outbox panel shows every post/comment/flair/subscribe/Journey call that would hit Reddit.
 - `node tools/shoot.mjs jobs.json` drives local Chrome over CDP for screenshots and taps.
 
+### Phase 2
+- `src/shared/play.ts`: pure tap-only reducer (pick, ghost, press, lift, undo, clear, keyboard
+  ghost moves, timing, solve detection) + `play.test.ts`. `src/shared/daily.ts`: launch date,
+  numbering, "Preview" labels, post titles.
+- `src/client/ui/PrintSheet.tsx`: riso renderer (one multiplied SVG layer per ink, misregistration,
+  rough-edge + speckle filter, colour-blind patterns, ghost, press bloom). `StampFace`, `Wordmark`, icons.
+- `src/client/play/*`: Paper, Tray (wooden rubber stamps), Controls, hints, `usePlay` hook.
+- `src/client/game/GameScreen.tsx`: layout (phone stacked; ≥1024px two columns), keyboard, print-run
+  win animation. Fonts: Bricolage Grotesque + DM Mono via @fontsource (bundled).
+
 ## Decisions
 
 - **devvit-mcp was unreachable** (connection timeout) for this whole run. Every Devvit API was checked
   against the installed type definitions in `node_modules/@devvit/*` (v0.15.4) and the devvit.json
   schema in `node_modules/@devvit/shared-types/schemas/config-file.v1.json`.
+- Lifts also count each Clear of a non-empty sheet (spec counts lifts + undos; clear is a mass lift).
+- Ghost placement: the tapped cell is always covered; if the stamp's anchor would fall off the paper
+  the ghost shifts to the nearest fitting position that still covers the tapped cell.
 - Kept the spec's 30% minimum coverage and mixed-cell minimums unchanged (prints are compact as a result).
 
 ## Known issues / for the user
