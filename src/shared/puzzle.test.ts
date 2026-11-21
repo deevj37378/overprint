@@ -158,14 +158,13 @@ test('a full year: every day meets its weekday rules', (t) => {
       );
     }
 
-    // The spec has no no-repeat rule, and small Monday prints can recur, but never within
-    // four weeks of each other.
+    // No print repeats the same weekday within the previous 52 weeks.
     const grid = targetToEmojiGrid(puzzle);
     const previous = lastSeen.get(grid);
     if (previous) {
       repeats.push(`${previous}=${date}`);
       assert.ok(
-        daysBetween(previous, date) > 28,
+        daysBetween(previous, date) > 7 * 52,
         `${label} repeats ${previous}`
       );
     }
@@ -177,7 +176,13 @@ test('a full year: every day meets its weekday rules', (t) => {
       `(${weekdayOf(slowest.date)}) at ${slowest.ms.toFixed(2)} ms; ` +
       `repeated prints: ${repeats.length ? repeats.join(', ') : 'none'}`
   );
-  assert.ok(slowest.ms < 100, `slowest day took ${slowest.ms} ms`);
+  // The first call is cold (it also computes 52 earlier first-choice prints for the
+  // no-repeat check); the server caches each day's puzzle in Redis.
+  assert.ok(slowest.ms < 400, `slowest day took ${slowest.ms} ms`);
+  assert.ok(
+    totalMs / dates.length < 20,
+    `average ${totalMs / dates.length} ms`
+  );
 });
 
 test('generation never fails for five years ahead', () => {

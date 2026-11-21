@@ -1,6 +1,6 @@
 // The daily puzzle: weekday difficulty, deterministic generation and solve verification.
 
-import { daysBetween, weekdayOf, type Weekday } from './date.ts';
+import { addDays, daysBetween, weekdayOf, type Weekday } from './date.ts';
 import { INKS, type Ink } from './ink.ts';
 import {
   dateToSeed,
@@ -224,6 +224,54 @@ const tryGenerate = (rng: Rng, rules: DayRules): Attempt | null => {
   return { tray, target, solution };
 };
 
+/** A daily print without its puzzle number (which depends on the launch date). */
+export type Print = Omit<Puzzle, 'number'>;
+
+/** How many previous same-weekday prints a new print must differ from. */
+export const NO_REPEAT_WEEKS = 52;
+
+const targetKey = (target: Sheet): string =>
+  target.map((l) => l.join('')).join('/');
+
+const search = (
+  date: string,
+  avoid: ReadonlySet<string>
+): Attempt & { size: number } => {
+  const rules = rulesFor(date);
+  const seed = dateToSeed(date);
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const result = tryGenerate(mulberry32(deriveSeed(seed, attempt)), rules);
+    if (result && !avoid.has(targetKey(result.target))) {
+      return { size: rules.size, ...result };
+    }
+  }
+  throw new Error(`No valid puzzle for ${date} after ${MAX_ATTEMPTS} attempts`);
+};
+
+// First-choice targets per date, memoised: the no-repeat check needs 52 of them per day.
+const firstChoice = new Map<string, string>();
+const firstChoiceKey = (date: string): string => {
+  const cached = firstChoice.get(date);
+  if (cached !== undefined) return cached;
+  const key = targetKey(search(date, new Set()).target);
+  if (firstChoice.size > 4000) firstChoice.clear();
+  firstChoice.set(date, key);
+  return key;
+};
+
+/**
+ * The print for a UTC date 'YYYY-MM-DD', independent of launch day. Deterministic.
+ * It never repeats the first-choice print of the same weekday in the previous 52 weeks
+ * (comparing against first choices keeps this cheap and non-recursive).
+ */
+export const generatePrint = (date: string): Print => {
+  const avoid = new Set<string>();
+  for (let week = 1; week <= NO_REPEAT_WEEKS; week++) {
+    avoid.add(firstChoiceKey(addDays(date, -7 * week)));
+  }
+  return { date, ...search(date, avoid) };
+};
+
 /**
  * The puzzle for a UTC date 'YYYY-MM-DD'. Deterministic: same date → same puzzle everywhere.
  * `launchDate` is the date of puzzle #1. Throws if `date` is before launch, or (in theory)
@@ -237,14 +285,7 @@ export const generateDailyPuzzle = (
   if (number < 1) {
     throw new RangeError(`${date} is before launch day ${launchDate}`);
   }
-  const rules = rulesFor(date);
-  const seed = dateToSeed(date);
-
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const result = tryGenerate(mulberry32(deriveSeed(seed, attempt)), rules);
-    if (result) return { date, number, size: rules.size, ...result };
-  }
-  throw new Error(`No valid puzzle for ${date} after ${MAX_ATTEMPTS} attempts`);
+  return { number, ...generatePrint(date) };
 };
 
 /** Does this arrangement reproduce the target? Any matching arrangement wins. */
