@@ -23,17 +23,19 @@ export const Jammed = ({
   onRetry,
 }: {
   message: string;
-  onRetry: () => void;
+  onRetry?: () => void;
 }) => (
   <main className="paper-grain flex min-h-dvh flex-col items-center justify-center gap-4 bg-paper p-6 text-center">
     <Wordmark className="text-4xl" />
     <p className="max-w-[300px] text-[16px] font-semibold">{message}</p>
-    <button
-      type="button"
-      onClick={onRetry}
-      className="min-h-12 rounded-full bg-ink px-6 font-extrabold text-paper active:scale-[0.98]"
-    >
-      Try again
-    </button>
+    {onRetry && (
+      <button
+        type="button"
+        onClick={onRetry}
+        className="min-h-12 rounded-full bg-ink px-6 font-extrabold text-paper active:scale-[0.98]"
+      >
+        Try again
+      </button>
+    )}
   </main>
 );

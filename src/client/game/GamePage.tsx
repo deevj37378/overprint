@@ -13,10 +13,15 @@ type Loaded = { puzzle: PuzzleView; me: MeResponse };
 
 type Phase =
   | { kind: 'loading' }
-  | { kind: 'error'; message: string }
+  | { kind: 'error'; message: string; retryable?: boolean }
   | { kind: 'playing' }
   | { kind: 'submitting'; state: PlayState }
-  | { kind: 'result'; result: SolveResult | null; submitError: string | null };
+  | {
+      kind: 'result';
+      result: SolveResult | null;
+      submitError: string | null;
+      unsaved?: PlayState;
+    };
 
 type Props = {
   colourBlind: boolean;
@@ -61,6 +66,7 @@ export const GamePage = ({
         kind: 'error',
         message:
           error instanceof ApiError ? error.message : 'The press jammed.',
+        retryable: !(error instanceof ApiError && error.code === 'no-puzzle'),
       });
     }
   }, [onLoaded]);
@@ -95,6 +101,7 @@ export const GamePage = ({
             error instanceof ApiError
               ? error.message
               : 'Could not save your print.',
+          unsaved: state,
         });
       }
     },
@@ -106,7 +113,9 @@ export const GamePage = ({
     return (
       <Jammed
         message={phase.kind === 'error' ? phase.message : 'The press jammed.'}
-        onRetry={retry}
+        {...(phase.kind === 'error' && phase.retryable === false
+          ? {}
+          : { onRetry: retry })}
       />
     );
   }
@@ -124,7 +133,10 @@ export const GamePage = ({
         submitError={phase.submitError}
         colourBlind={colourBlind}
         headerTools={headerTools}
-        onRetrySubmit={() => setPhase({ kind: 'playing' })}
+        onRetrySubmit={() => {
+          if (phase.unsaved) void submit(phase.unsaved);
+          else setPhase({ kind: 'playing' });
+        }}
         onReplay={() => {
           setReplay((n) => n + 1);
           setPhase({ kind: 'playing' });

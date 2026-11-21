@@ -33,5 +33,9 @@ export const setUserFields = async (
     if (typeof value === 'boolean') out[name] = value ? '1' : '0';
     else if (value !== undefined) out[name] = String(value);
   }
-  if (Object.keys(out).length > 0) await redis.hSet(keys.user(userId), out);
+  if (Object.keys(out).length > 0) {
+    await redis.hSet(keys.user(userId), out);
+    // Profiles fade out after a year without activity (data minimisation).
+    await redis.expire(keys.user(userId), 365 * 24 * 60 * 60);
+  }
 };

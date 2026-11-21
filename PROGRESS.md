@@ -15,7 +15,7 @@ is not ✅.
 | 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ✅ |
 | 6 | Print Shop and Community Sunday | ✅ |
 | 7 | Gallery Wall and archive | ✅ |
-| 8 | Polish and compliance pass (reviewer + judge) | ⏳ |
+| 8 | Polish and compliance pass (reviewer + judge) | ✅ |
 | 9 | Launch kit (README, SUBREDDIT, icon/banner, DEVPOST) | ⏳ |
 
 ## What each phase built
@@ -105,6 +105,23 @@ is not ✅.
   print, month switcher, memoised frames. Tapping a frame `navigateTo`s its post.
 - Old dailies show "From the archive · doesn't affect your streak" and never touch the streak.
 
+### Phase 8
+Reviewer pass (Devvit rules, checked against installed types/schema since devvit-mcp was down):
+- User actions: share / join / post each sit behind their own explicit button (+ a confirm sheet for
+  share and post), never automatic, never required, never bundled. Logged-out players can play.
+- No Snoo/Reddit branding or orange; no free-text input for players (word pickers only).
+- Data: `onPostDelete` cleans post keys; per-user daily keys + leaderboards expire at 90 days; user
+  profile hash 1 year after last write; streak bitfields 2 years. (No account-delete trigger exists
+  in Devvit 0.15.4.)
+- Contrast: "PROOF" tag text now ink on pink (white was 3.1:1).
+- Edge cases: failed solve save keeps your board and retries the same placements; deleted community
+  print shows a message without a useless retry; double-tap share is idempotent server-side;
+  midnight rollover has a 15-minute grace; 7×7 on 320px fits (stamps shrink below 360px).
+- Removed dead code. No client console logging.
+Judge pass (60 s on a phone): splash → Play → 30-second tutorial (skippable) → daily → print run →
+result. Added the "N squares differ" hint (Phase 5) so nobody stalls on a near-miss.
+Splash payload: ~85 KB gz JS+CSS (React + renderer), fonts are local woff2 with swap, no game code.
+
 ## Decisions
 
 - **devvit-mcp was unreachable** (connection timeout) for this whole run. Every Devvit API was checked
@@ -125,6 +142,10 @@ is not ✅.
 - Kept the spec's 30% minimum coverage and mixed-cell minimums unchanged (prints are compact as a result).
 
 ## Known issues / for the user
+
+- Lighthouse wasn't run here (no Lighthouse in this environment). Run it on the playtest post:
+  Chrome DevTools → Lighthouse → Mobile → Performance, on the post's iframe URL, or
+  `npx lighthouse <url> --preset=perf --form-factor=mobile`.
 
 - Closing the 9 open Dependabot PRs with `gh pr close` was blocked by the session's permission
   classifier. Run: `for n in 1 2 3 4 5 6 7 8 9; do gh pr close $n --comment "Pinning dependencies during the hackathon."; done`

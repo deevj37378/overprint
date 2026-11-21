@@ -1,7 +1,6 @@
 import { redis } from '@devvit/web/server';
 import type { PuzzleView, Streak } from '../../shared/api';
 import { utcDateOf } from '../../shared/daily';
-import { addDays } from '../../shared/date';
 import {
   CHUNKS_PER_YEAR,
   currentStreak,
@@ -68,22 +67,8 @@ export const recordStreakDay = async (
   date: string
 ): Promise<void> => {
   const bit = dayBit(date);
-  await redis.bitfield(
-    keys.streak(userId, bit.year),
-    'set',
-    'u1',
-    bit.index,
-    1
-  );
+  const key = keys.streak(userId, bit.year);
+  await redis.bitfield(key, 'set', 'u1', bit.index, 1);
+  // Keep a year's bits for two years (enough for streaks across New Year), then let them go.
+  await redis.expire(key, 2 * 365 * 24 * 60 * 60);
 };
-
-/** For tests and the preview harness: did the user play on a date? */
-export const playedOn = async (
-  userId: string,
-  date: string
-): Promise<boolean> => {
-  const bit = dayBit(date);
-  return (await readYear(userId, bit.year)).has(bit.index);
-};
-
-export const yesterdayOf = (date: string) => addDays(date, -1);

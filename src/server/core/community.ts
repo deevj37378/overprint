@@ -1,6 +1,6 @@
 // Community prints (Print Shop) and Community Sunday.
 
-import { context, reddit, redis } from '@devvit/web/server';
+import { reddit, redis } from '@devvit/web/server';
 import type { ShopPostResponse, ShopStamp } from '../../shared/api';
 import {
   buildCommunityPuzzle,
@@ -204,6 +204,3 @@ export const forgetCommunityPrint = async (printId: string): Promise<void> => {
   await redis.del(keys.print(printId));
   if (print) await redis.zRem(keys.printsWeek(isoWeek(print.date)), [printId]);
 };
-
-/** Which subreddit we post into (for UI copy). */
-export const subredditName = (): string => context.subredditName;

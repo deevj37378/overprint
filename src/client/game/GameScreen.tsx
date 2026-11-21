@@ -158,7 +158,7 @@ export const GameScreen = ({
       <main className="mx-auto flex w-full max-w-[1080px] flex-1 flex-col gap-3 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:content-start lg:gap-x-8 lg:gap-y-5 lg:px-6 lg:pt-4">
         <section className="flex items-center gap-3 lg:order-2 lg:flex-col lg:items-stretch lg:gap-4">
           <div className="relative shrink-0 rounded-[10px] bg-[#fbf8f2] p-1.5 shadow-[0_1px_0_#d6cab5,0_8px_16px_-12px_rgba(60,40,20,0.5)] ring-1 ring-paper-edge lg:p-3">
-            <span className="absolute -top-2 left-2 rotate-[-4deg] rounded-sm bg-riso-pink px-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white mix-blend-multiply lg:text-[11px]">
+            <span className="absolute -top-2 left-2 rotate-[-4deg] rounded-sm bg-riso-pink px-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-ink lg:text-[11px]">
               Proof
             </span>
             <PrintSheet

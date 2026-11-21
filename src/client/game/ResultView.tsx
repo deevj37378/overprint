@@ -182,7 +182,7 @@ export const ResultView = ({
               onClick={onRetrySubmit}
               className="mt-2 font-bold underline"
             >
-              Back to the paper
+              Try saving again
             </button>
           </div>
         )}
