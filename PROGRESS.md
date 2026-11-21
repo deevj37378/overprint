@@ -11,7 +11,7 @@ is not ✅.
 | A | Local preview harness (`npm run preview:local`) | ✅ |
 | 2 | Game screen and riso look | ✅ |
 | 3 | Server, daily post, scheduler, sticky, splash | ✅ |
-| 4 | Result card, streaks, leaderboard, flair, share, subscribe | ⏳ |
+| 4 | Result card, streaks, leaderboard, flair, share, subscribe | ✅ |
 | 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ⏳ |
 | 6 | Print Shop and Community Sunday | ⏳ |
 | 7 | Gallery Wall and archive | ⏳ |
@@ -58,6 +58,15 @@ is not ✅.
 - Harness test helpers: "Add 6 fake players", "Mark me solved", "First-ever play".
 - (The streak/flair/share/subscribe server code landed here because `recordSolve` needs it;
   the result card UI is Phase 4.)
+
+### Phase 4
+- `ResultView`: one end screen with the pulled print (✦ CLEAN stamp when clean), time / lifts /
+  streak tiles, percentile line, emoji share grid, top-10 leaderboard + your rank, and three separate
+  buttons: Share to comments (opens `ShareSheet` showing the exact text and account first), Join the
+  print shop (hidden once joined), See the Gallery Wall. "Print it again" replays (not counted).
+- `GET /api/result` rebuilds the card for players reopening a solved post. Streak maths in
+  `src/shared/streak.ts` with tests (no plays, today/yesterday, New Year, gaps, same day twice).
+- Gallery entry point registered (placeholder page until Phase 7).
 
 ## Decisions
 

@@ -44,12 +44,10 @@ const request = async <T extends Ok>(
       'offline'
     );
   }
-  const body: T | ErrorResponse = await res
-    .json()
-    .catch((): ErrorResponse => ({
-      status: 'error',
-      message: `The press jammed (${res.status}).`,
-    }));
+  const body: T | ErrorResponse = await res.json().catch((): ErrorResponse => ({
+    status: 'error',
+    message: `The press jammed (${res.status}).`,
+  }));
   if (body.status === 'error') throw new ApiError(body.message, body.code);
   return body;
 };
@@ -63,6 +61,7 @@ export const api = {
   splash: () => request<SplashResponse>('/api/splash'),
   start: () => post<{ status: 'ok' }>('/api/start', {}),
   solve: (body: SolveRequest) => post<SolveResult>('/api/solve', body),
+  result: () => request<SolveResult>('/api/result'),
   leaderboard: () => request<LeaderboardResponse>('/api/leaderboard'),
   share: () => post<ShareResponse>('/api/share', {}),
   subscribe: () => post<SubscribeResponse>('/api/subscribe', {}),

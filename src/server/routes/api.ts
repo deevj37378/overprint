@@ -22,7 +22,13 @@ import {
   loadPuzzleFor,
   type LoadedPuzzle,
 } from '../core/puzzles';
-import { getSolve, markStarted, recordSolve, type Who } from '../core/solves';
+import {
+  getSolve,
+  markStarted,
+  recordSolve,
+  storedResult,
+  type Who,
+} from '../core/solves';
 import { readStreak } from '../core/streaks';
 import { getUser, setUserFields } from '../core/users';
 import { puzzleKey } from '../../shared/postdata';
@@ -155,6 +161,20 @@ api.post('/solve', async (c) => {
   } catch (error) {
     console.error('POST /api/solve', error);
     return fail(c, 500, 'The press jammed saving your print. Try again.');
+  }
+});
+
+api.get('/result', async (c) => {
+  try {
+    const loaded = await loadCurrent();
+    if (!loaded) return fail(c, 404, 'No print here.');
+    const result = await storedResult(loaded, await currentPlayer());
+    if (!result)
+      return fail(c, 404, 'You haven’t printed this one yet.', 'not-solved');
+    return c.json(result);
+  } catch (error) {
+    console.error('GET /api/result', error);
+    return fail(c, 500, 'Could not load your result.');
   }
 });
 

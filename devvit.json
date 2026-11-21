@@ -20,6 +20,9 @@
       },
       "game": {
         "entry": "game.html"
+      },
+      "gallery": {
+        "entry": "gallery.html"
       }
     }
   },

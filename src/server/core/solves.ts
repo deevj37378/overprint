@@ -79,7 +79,7 @@ export const recordSolve = async (
       message: `That print doesn't match the proof (${verdict.error}).`,
     };
   const placements = parsePlacements(body.placements) ?? [];
-  const { pkey, puzzle, view } = loaded;
+  const { pkey, view } = loaded;
 
   let started: number | null = null;
   if (who) {
@@ -104,7 +104,6 @@ export const recordSolve = async (
   };
 
   let counted = false;
-  let streak: Streak | null = null;
   let streakCounted = false;
 
   if (who && !existing) {
@@ -132,6 +131,22 @@ export const recordSolve = async (
       }
     }
   }
+  return {
+    ok: true,
+    result: await describeSolve(loaded, who, record, counted, streakCounted),
+  };
+};
+
+/** The full result card data for a stored or fresh solve. */
+const describeSolve = async (
+  loaded: LoadedPuzzle,
+  who: Who,
+  record: SolveRecord,
+  counted: boolean,
+  streakCounted: boolean
+): Promise<SolveResult> => {
+  const { pkey, puzzle, view } = loaded;
+  let streak: Streak | null = null;
   if (who) {
     streak = await readStreak(who.userId, nowMs());
     if (counted) await refreshFlair(who, streak);
@@ -143,30 +158,37 @@ export const recordSolve = async (
     : false;
 
   return {
-    ok: true,
-    result: {
-      status: 'ok',
+    status: 'ok',
+    timeMs: record.timeMs,
+    lifts: record.lifts,
+    clean: record.clean,
+    score: record.score,
+    loggedIn: who !== null,
+    counted,
+    rank: place.rank,
+    total: place.total,
+    percentile: place.percentile,
+    streak,
+    streakCounted,
+    emojiGrid: emojiGrid(puzzle.target),
+    shareText: shareCommentText({
+      title: view.title,
+      target: puzzle.target,
       timeMs: record.timeMs,
       lifts: record.lifts,
-      clean: record.clean,
-      score: record.score,
-      loggedIn: who !== null,
-      counted,
-      rank: place.rank,
-      total: place.total,
-      percentile: place.percentile,
-      streak,
-      streakCounted,
-      emojiGrid: emojiGrid(puzzle.target),
-      shareText: shareCommentText({
-        title: view.title,
-        target: puzzle.target,
-        timeMs: record.timeMs,
-        lifts: record.lifts,
-        streak: view.kind === 'daily' ? streak : null,
-      }),
-      shared,
-      canShare: who !== null,
-    },
+      streak: view.kind === 'daily' ? streak : null,
+    }),
+    shared,
+    canShare: who !== null,
   };
+};
+
+/** The result card for a player who already solved this puzzle (e.g. reopening the post). */
+export const storedResult = async (
+  loaded: LoadedPuzzle,
+  who: Who
+): Promise<SolveResult | null> => {
+  if (!who) return null;
+  const record = await getSolve(loaded.pkey, who.userId);
+  return record ? describeSolve(loaded, who, record, false, false) : null;
 };
