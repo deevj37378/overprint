@@ -9,7 +9,8 @@
         "SUBMIT_COMMENT",
         "SUBSCRIBE_TO_SUBREDDIT"
       ]
-    }
+    },
+    "journeys": true
   },
   "post": {
     "dir": "dist/client",

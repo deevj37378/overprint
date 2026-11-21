@@ -382,6 +382,10 @@ const renderPanel = () => {
       row(
         ...(s.actions ?? []).map((a) =>
           button(a.label, async () => {
+            if (a.id === 'first-play') {
+              // Logged-out players keep prefs in localStorage; clear those too.
+              localStorage.removeItem('overprint.prefs');
+            }
             state = await api('/action', { id: a.id });
             renderPanel();
             loadFrame();

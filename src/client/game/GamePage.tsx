@@ -61,6 +61,7 @@ type Props = {
   headerTools?: ReactNode;
   onLoaded?: (loaded: Loaded) => void;
   onCommand?: (command: PlayCommand, state: PlayState) => void;
+  onPressed?: (state: PlayState) => void;
   onSolvedLocally?: (state: PlayState) => void;
   onResult?: (result: SolveResult) => void;
   /** Rendered instead of the puzzle before play (e.g. the first-time tutorial). */
@@ -72,6 +73,7 @@ export const GamePage = ({
   headerTools,
   onLoaded,
   onCommand,
+  onPressed,
   onSolvedLocally,
   onResult,
   intro,
@@ -199,6 +201,7 @@ export const GamePage = ({
           void api.start().catch(() => {});
         onCommand?.(command, state);
       }}
+      {...(onPressed ? { onPressed } : {})}
       onSolved={(state) => {
         onSolvedLocally?.(state);
         void submit(state);

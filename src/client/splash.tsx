@@ -16,6 +16,7 @@ import { createRoot } from 'react-dom/client';
 import type { SplashResponse } from '../shared/api';
 import { formatShortDate, puzzleLabel } from '../shared/labels';
 import { decodeTarget, parsePostData } from '../shared/postdata';
+import { journeys } from './lib/journeys';
 import { PrintSheet } from './ui/PrintSheet';
 import { Wordmark } from './ui/Wordmark';
 
@@ -44,9 +45,11 @@ export const Splash = () => {
       .catch(() => {});
   }, []);
 
-  const open = (event: MouseEvent, entry: string) =>
-    requestExpandedMode(event.nativeEvent, entry);
   const solved = info?.solve ?? null;
+  const open = (event: MouseEvent, entry: string) => {
+    if (entry === 'game' && !solved) journeys.start();
+    requestExpandedMode(event.nativeEvent, entry);
+  };
   const label = data
     ? data.kind === 'community'
       ? 'Community print'

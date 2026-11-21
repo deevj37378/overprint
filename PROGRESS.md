@@ -12,7 +12,7 @@ is not ✅.
 | 2 | Game screen and riso look | ✅ |
 | 3 | Server, daily post, scheduler, sticky, splash | ✅ |
 | 4 | Result card, streaks, leaderboard, flair, share, subscribe | ✅ |
-| 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ⏳ |
+| 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ✅ |
 | 6 | Print Shop and Community Sunday | ⏳ |
 | 7 | Gallery Wall and archive | ⏳ |
 | 8 | Polish and compliance pass (reviewer + judge) | ⏳ |
@@ -67,6 +67,21 @@ is not ✅.
 - `GET /api/result` rebuilds the card for players reopening a solved post. Streak maths in
   `src/shared/streak.ts` with tests (no plays, today/yesterday, New Year, gaps, same day twice).
 - Gallery entry point registered (placeholder page until Phase 7).
+
+### Phase 5
+- Tutorial (`game/Tutorial.tsx`): 3×3 practice (blue bar across, yellow bar down → green), hints
+  follow the player's actual state, wrong placements get a nudge, Skip anytime. Shown once:
+  `tutorialDone` in Redis (logged in) + localStorage (logged out). "?" → `HelpSheet` legend with
+  real multiplied ink swatches, four rules, "Replay the tutorial".
+- Colour-blind patterns toggle (dots / diagonals / horizontal lines), remembered per user.
+- Sound (`lib/sound.ts`): Web Audio thunk / tick / ka-chunk, muted by default, header toggle,
+  suspended on `visibilitychange`.
+- Keyboard: 1–9 pick, arrows move ghost, R rotate, Enter/Space stamp, U/Backspace undo, Esc drop.
+- Journeys: client `@devvit/analytics/client/reddit` → `/api/telemetry/journey/*` (server forwards
+  to `telemetry`, allow-listed action names, no PII). App.Ready on load, Journey.Start on Play
+  (splash) or first pick, Progress per press, Interaction rotate/undo/clear/hint/tutorial, End with
+  `{win, score}` (score = 1000 − leaderboard seconds). `permissions.journeys: true`.
+- Judge pass fixes: hint line counts squares that still differ from the proof once you've printed.
 
 ## Decisions
 

@@ -34,6 +34,8 @@ type Props = {
   banner?: ReactNode;
   onSolved: (state: PlayState) => void;
   onCommand?: (command: PlayCommand, state: PlayState) => void;
+  /** After each stamp is pressed onto the paper. */
+  onPressed?: (state: PlayState) => void;
 };
 
 const KEY_MOVES: Record<string, [number, number]> = {
@@ -50,6 +52,7 @@ export const GameScreen = ({
   banner,
   onSolved,
   onCommand,
+  onPressed,
 }: Props) => {
   const { state, dispatch: rawDispatch } = usePlay(
     puzzle.size,
@@ -66,6 +69,14 @@ export const GameScreen = ({
   };
   const now = useNow(state);
   const running = state.solvedAt !== null;
+
+  const pressKey = state.lastPressed
+    ? `${state.lastPressed}-${state.history.length}`
+    : null;
+  useEffect(() => {
+    if (pressKey) onPressed?.(stateRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pressKey]);
 
   // Solve → "print run" → hand over to the result screen.
   useEffect(() => {
