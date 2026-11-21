@@ -15,6 +15,12 @@
     },
     {
       "path": "./tools/tsconfig.vite.json"
+    },
+    {
+      "path": "./tools/tsconfig.preview-node.json"
+    },
+    {
+      "path": "./tools/tsconfig.preview-web.json"
     }
   ]
 }

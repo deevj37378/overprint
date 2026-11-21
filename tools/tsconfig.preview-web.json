@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../dist/types/preview-web",
+    "tsBuildInfoFile": "../dist/types/preview-web/tsconfig.tsbuildinfo",
+    "customConditions": ["browser"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "exactOptionalPropertyTypes": false,
+    "rootDir": ".."
+  },
+  "include": ["../preview/client/**/*.ts", "../preview/shell/**/*.ts"],
+  "exclude": []
+}

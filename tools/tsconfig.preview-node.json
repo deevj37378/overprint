@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../dist/types/preview-node",
+    "tsBuildInfoFile": "../dist/types/preview-node/tsconfig.tsbuildinfo",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "exactOptionalPropertyTypes": false,
+    "rootDir": ".."
+  },
+  "include": ["../preview/server/**/*.ts", "../preview/vite.config.ts"],
+  "exclude": []
+}

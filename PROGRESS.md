@@ -8,7 +8,7 @@ is not ✅.
 | Phase | What | Status |
 |---|---|---|
 | 0 | Housekeeping: Dependabot, no-repeat prints | ✅ (PR closing blocked, see Known issues) |
-| A | Local preview harness (`npm run preview:local`) | ⏳ |
+| A | Local preview harness (`npm run preview:local`) | ✅ |
 | 2 | Game screen and riso look | ⏳ |
 | 3 | Server, daily post, scheduler, sticky, splash | ⏳ |
 | 4 | Result card, streaks, leaderboard, flair, share, subscribe | ⏳ |
@@ -24,6 +24,15 @@ is not ✅.
 - Removed `.github/dependabot.yml`.
 - Generator never repeats the first-choice print of the same weekday in the previous 52 weeks
   (`generatePrint` in `src/shared/puzzle.ts`). Costs ~130 ms on a cold Sunday, a few ms warm.
+
+### Phase A
+- `npm run preview:local` → http://localhost:5199/preview/ (shell with device frames + controls).
+- Runs the REAL Hono app (`src/server/app.ts`) inside Vite; `@devvit/web/server`,
+  `@devvit/web/client` and `@devvit/analytics/server/reddit` are aliased to in-memory fakes in
+  `preview/` (see `preview/vite.config.ts`). `src/server/core/clock.ts` is swapped for a fake clock.
+  Production code has no preview branches; the only seams are `app.ts` (exported app) and `clock.ts`.
+- Outbox panel shows every post/comment/flair/subscribe/Journey call that would hit Reddit.
+- `node tools/shoot.mjs jobs.json` drives local Chrome over CDP for screenshots and taps.
 
 ## Decisions
 

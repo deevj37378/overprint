@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overprint · local preview</title>
+    <link rel="stylesheet" href="./shell/shell.css" />
+  </head>
+  <body>
+    <aside id="panel" aria-label="Preview controls"></aside>
+    <main id="stage">
+      <div id="device">
+        <iframe id="app" title="Overprint app"></iframe>
+      </div>
+      <p id="device-label"></p>
+    </main>
+    <div id="toasts" aria-live="polite"></div>
+    <dialog id="form-dialog"></dialog>
+    <script type="module" src="./shell/shell.ts"></script>
+  </body>
+</html>
