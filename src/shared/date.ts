@@ -50,3 +50,17 @@ export const weekdayOf = (date: string): Weekday => {
   if (weekday === undefined) throw new RangeError(`Bad weekday index ${index}`);
   return weekday;
 };
+
+/** ISO-8601 week, e.g. '2026-W49' (weeks start Monday; week 1 contains the first Thursday). */
+export const isoWeek = (date: string): string => {
+  const day = parseIsoDate(date);
+  const weekday = (new Date(day * DAY_MS).getUTCDay() + 6) % 7; // Mon = 0
+  const thursday = day - weekday + 3;
+  const year = new Date(thursday * DAY_MS).getUTCFullYear();
+  const firstThursdayDay = parseIsoDate(`${year}-01-04`);
+  const firstWeekday =
+    (new Date(firstThursdayDay * DAY_MS).getUTCDay() + 6) % 7;
+  const week1Monday = firstThursdayDay - firstWeekday;
+  const week = Math.floor((thursday - 3 - week1Monday) / 7) + 1;
+  return `${year}-W${String(week).padStart(2, '0')}`;
+};

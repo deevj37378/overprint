@@ -15,6 +15,7 @@ import type { LoadedPuzzle } from './puzzles';
 import { countWallSolve } from './wall';
 import { recordStreakDay, readStreak, streakDayFor } from './streaks';
 import { refreshFlair } from './flair';
+import { refreshCommunityScore } from './community';
 
 export type SolveRecord = SolveSummary & {
   at: number;
@@ -124,6 +125,9 @@ export const recordSolve = async (
       await redis.hIncrBy(keys.stats(pkey), 'solves', 1);
       await redis.hIncrBy(keys.stats(pkey), 'totalTimeMs', record.timeMs);
       if (view.kind === 'daily') await countWallSolve(view.date);
+      if (view.kind === 'community' && loaded.data.printId) {
+        await refreshCommunityScore(loaded.data.printId);
+      }
       const day = streakDayFor(view, nowMs());
       if (day) {
         await recordStreakDay(who.userId, day);

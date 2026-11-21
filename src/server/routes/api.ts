@@ -9,6 +9,8 @@ import type {
   PrefsResponse,
   PuzzleResponse,
   ShareResponse,
+  ShopInfoResponse,
+  ShopPostResponse,
   SolveRequest,
   SplashResponse,
   StartResponse,
@@ -33,6 +35,8 @@ import { readStreak } from '../core/streaks';
 import { getUser, setUserFields } from '../core/users';
 import { puzzleKey } from '../../shared/postdata';
 import { shareCommentText } from '../../shared/share';
+import { DAILY_POST_LIMIT, parseShopStamps } from '../../shared/community';
+import { postCommunityPrint, postedToday } from '../core/community';
 import { isCommentId, isPostId } from '../core/ids';
 
 export const api = new Hono();
@@ -323,4 +327,53 @@ api.post('/prefs', async (c) => {
     status: 'ok',
     prefs: { tutorialDone: user.tutorialDone, colourBlind: user.colourBlind },
   });
+});
+
+api.get('/shop', async (c) => {
+  const who = await currentPlayer();
+  return c.json<ShopInfoResponse>({
+    status: 'ok',
+    loggedIn: who !== null,
+    username: who?.username ?? null,
+    postedToday: who ? await postedToday(who.userId) : 0,
+    dailyLimit: DAILY_POST_LIMIT,
+  });
+});
+
+/** Post my print: submits a post AS THE USER, only from an explicit button press. */
+api.post('/shop/post', async (c) => {
+  try {
+    const who = await currentPlayer();
+    if (!who) return fail(c, 400, 'Log in to post your print.', 'logged-out');
+    const body: unknown = await c.req.json().catch(() => null);
+    const get = (key: string): unknown =>
+      typeof body === 'object' && body !== null
+        ? Reflect.get(body, key)
+        : undefined;
+    const size = get('size');
+    const stamps = parseShopStamps(get('stamps'));
+    const adjective = get('adjective');
+    const noun = get('noun');
+    if (
+      typeof size !== 'number' ||
+      !stamps ||
+      typeof adjective !== 'string' ||
+      typeof noun !== 'string'
+    ) {
+      return c.json<ShopPostResponse>({
+        status: 'rejected',
+        reason: 'That print didn’t arrive in one piece. Try again.',
+      });
+    }
+    return c.json<ShopPostResponse>(
+      await postCommunityPrint(who, size, stamps, adjective, noun)
+    );
+  } catch (error) {
+    console.error('POST /api/shop/post', error);
+    return fail(
+      c,
+      500,
+      'The press jammed posting your print. Nothing was posted.'
+    );
+  }
 });

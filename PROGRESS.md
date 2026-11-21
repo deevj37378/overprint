@@ -13,7 +13,7 @@ is not ✅.
 | 3 | Server, daily post, scheduler, sticky, splash | ✅ |
 | 4 | Result card, streaks, leaderboard, flair, share, subscribe | ✅ |
 | 5 | Tutorial, colour-blind mode, keyboard, sound, Journeys | ✅ |
-| 6 | Print Shop and Community Sunday | ⏳ |
+| 6 | Print Shop and Community Sunday | ✅ |
 | 7 | Gallery Wall and archive | ⏳ |
 | 8 | Polish and compliance pass (reviewer + judge) | ⏳ |
 | 9 | Launch kit (README, SUBREDDIT, icon/banner, DEVPOST) | ⏳ |
@@ -83,6 +83,19 @@ is not ✅.
   `{win, score}` (score = 1000 − leaderboard seconds). `permissions.journeys: true`.
 - Judge pass fixes: hint line counts squares that still differ from the proof once you've printed.
 
+### Phase 6
+- `src/shared/community.ts` (+ tests): `checkPrint` reuses the generator's quality rules (on paper,
+  no identical stamps, no invisible stamp, mixed cells, 30–85% inked) with friendly reasons;
+  curated title word lists; `buildCommunityPuzzle` (seeded shuffle; placements are the solution);
+  `pickSunday`; `isoWeek` in date.ts.
+- `shop` entry point (`shop.tsx`, `shop/ShopScreen.tsx`): size picker, ink + 10-shape palette,
+  same paper/controls, live validation, word-picker title + shuffle, confirm sheet that says exactly
+  what will be posted and as whom. `POST /api/shop/post` submits AS THE USER (`runAs: 'USER'`,
+  `userGeneratedContent`), max 3 per user per UTC day; app adds the sticky share comment.
+- `print:{id}`, `prints:week:{isoWeek}` (score = upvotes×1000 + solves, refreshed on each solve).
+  Saturday's scheduler run picks Sunday's daily (`sunday:{date}`), the maker gets
+  "🎨 Featured Printer" flair. Shop is linked from the splash and the result card.
+
 ## Decisions
 
 - **devvit-mcp was unreachable** (connection timeout) for this whole run. Every Devvit API was checked
@@ -97,6 +110,9 @@ is not ✅.
   so we remember that the user joined through the app and hide the button after that.
 - Devvit 0.15.4 has no account-deletion trigger; per-user daily keys expire after 90 days, and
   leaderboards (which hold user ids) expire after 90 days too. Noted in Known issues.
+- Community prints must be "valid" like dailies: min mixed squares = 1 (two stamps) or 2 (3+).
+- Community Sunday candidates: prints created in the last 7 days with a live post; ties broken by
+  solves, then the earliest.
 - Kept the spec's 30% minimum coverage and mixed-cell minimums unchanged (prints are compact as a result).
 
 ## Known issues / for the user

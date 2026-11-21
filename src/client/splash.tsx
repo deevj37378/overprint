@@ -144,6 +144,28 @@ export const Splash = () => {
             Play
           </button>
         )}
+        <nav
+          className="flex items-center gap-4 text-[13px] font-bold"
+          aria-label="More"
+        >
+          <button
+            type="button"
+            onClick={(e) => open(e, 'gallery')}
+            className="min-h-8 underline decoration-2 underline-offset-2"
+          >
+            Gallery Wall
+          </button>
+          <span aria-hidden="true" className="text-muted">
+            ·
+          </span>
+          <button
+            type="button"
+            onClick={(e) => open(e, 'shop')}
+            className="min-h-8 underline decoration-2 underline-offset-2"
+          >
+            Print Shop
+          </button>
+        </nav>
         {info && !info.loggedIn && (
           <button
             type="button"

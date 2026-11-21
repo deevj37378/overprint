@@ -6,6 +6,7 @@
     "reddit": {
       "enable": true,
       "asUser": [
+        "SUBMIT_POST",
         "SUBMIT_COMMENT",
         "SUBSCRIBE_TO_SUBREDDIT"
       ]
@@ -24,6 +25,9 @@
       },
       "gallery": {
         "entry": "gallery.html"
+      },
+      "shop": {
+        "entry": "shop.html"
       }
     }
   },

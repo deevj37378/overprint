@@ -266,6 +266,25 @@ export const ResultView = ({
           </div>
         </section>
 
+        <button
+          type="button"
+          data-testid="shop"
+          onClick={(e) => requestExpandedMode(e.nativeEvent, 'shop')}
+          className="flex items-center gap-3 rounded-xl bg-riso-yellow/50 px-3 py-2.5 text-left ring-1 ring-paper-edge active:scale-[0.99]"
+        >
+          <span className="text-[26px]" aria-hidden="true">
+            🎨
+          </span>
+          <span className="flex-1">
+            <span className="block text-[15px] font-extrabold">
+              Make your own print
+            </span>
+            <span className="block text-[13px] text-muted">
+              The best one this week becomes Community Sunday.
+            </span>
+          </span>
+        </button>
+
         {result?.emojiGrid && (
           <section
             className="flex items-center gap-3 rounded-xl bg-[#fbf8f2] p-3 ring-1 ring-paper-edge"
