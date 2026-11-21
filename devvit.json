@@ -74,5 +74,8 @@
   },
   "dev": {
     "subreddit": "overprint_colors_dev"
+  },
+  "marketingAssets": {
+    "icon": "assets/icon.png"
   }
 }

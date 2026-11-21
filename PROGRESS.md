@@ -16,7 +16,7 @@ is not ✅.
 | 6 | Print Shop and Community Sunday | ✅ |
 | 7 | Gallery Wall and archive | ✅ |
 | 8 | Polish and compliance pass (reviewer + judge) | ✅ |
-| 9 | Launch kit (README, SUBREDDIT, icon/banner, DEVPOST) | ⏳ |
+| 9 | Launch kit (README, SUBREDDIT, icon/banner, DEVPOST) | ✅ |
 
 ## What each phase built
 
@@ -121,6 +121,29 @@ Reviewer pass (Devvit rules, checked against installed types/schema since devvit
 Judge pass (60 s on a phone): splash → Play → 30-second tutorial (skippable) → daily → print run →
 result. Added the "N squares differ" hint (Phase 5) so nobody stalls on a near-miss.
 Splash payload: ~85 KB gz JS+CSS (React + renderer), fonts are local woff2 with swap, no game code.
+
+### Phase 9
+- README.md (play, daily loop, Print Shop, Gallery, Reddit features, fair play, data, a11y, local run).
+- SUBREDDIT.md (description, sidebar, rules, pinned how-to post, post flair).
+- `assets/icon.png` 256×256 + `assets/banner.png` 1920×384 via `node tools/make-art.mjs`
+  (SVG → PNG through local Chrome); icon registered as `marketingAssets.icon`.
+- DEVPOST.md (inspiration … what's next) + 50-second video script with shot list.
+- `npm run deploy` deliberately NOT run (you upload yourself).
+
+## Final checklist for you
+
+- [ ] Close the 9 Dependabot PRs (command under Known issues).
+- [ ] `npm run login` (if needed), then `npm run deploy` to upload. Never `npm run launch`.
+- [ ] Create the public demo subreddit (<200 members); install the app; upload icon + banner;
+      paste SUBREDDIT.md text; add the four post flairs; pin the how-to post.
+- [ ] Dec 1: confirm the 00:00 UTC scheduler created "Overprint #1 · Tue 1 Dec" with the pinned
+      "Share your print here 👇" comment. Use "Post a print for a date…" to backfill if needed.
+- [ ] On a phone, from a fresh account: play → share → join → Print Shop post → play that print
+      from another account → Gallery Wall. Check flair appears.
+- [ ] Run Lighthouse (mobile) on the splash; target > 80.
+- [ ] Make the subreddit public (or install dr-admin-approve) before judging.
+- [ ] Record the 50-second video (DEVPOST.md), fill in the Devpost form, and the Devvit feedback survey.
+- [ ] Submit by Tue Dec 8, 6 pm PT (Wed Dec 9, 7:30 am IST).
 
 ## Decisions
 
