@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../dist/types/shared-test",
+    "tsBuildInfoFile": "../dist/types/shared-test/tsconfig.tsbuildinfo",
+    "lib": [
+      "ES2023"
+    ],
+    "types": [
+      "node"
+    ],
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": ".."
+  },
+  "include": [
+    "../src/shared/**/*.ts",
+    "./print-samples.ts"
+  ],
+  "exclude": []
+}
