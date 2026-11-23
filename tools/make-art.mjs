@@ -1,4 +1,4 @@
-// Renders the subreddit icon (256×256) and banner (1920×384) in the riso style.
+// Renders the subreddit icon (256×256 artwork, saved at 1024×1024) and banner (1920×384) in the riso style.
 // SVG/HTML → PNG through the installed Google Chrome (DevTools protocol), using the bundled fonts.
 // Usage: node tools/make-art.mjs   → writes assets/icon.png and assets/banner.png
 
@@ -176,16 +176,16 @@ const send = (method, params = {}) =>
   });
 
 const tmp = mkdtempSync(path.join(tmpdir(), 'op-art-html-'));
-for (const [name, w, h, html] of [
-  ['icon', 256, 256, icon()],
-  ['banner', 1920, 384, banner()],
+for (const [name, w, h, html, scale] of [
+  ['icon', 256, 256, icon(), 4],
+  ['banner', 1920, 384, banner(), 1],
 ]) {
   const file = path.join(tmp, `${name}.html`);
   writeFileSync(file, html);
   await send('Emulation.setDeviceMetricsOverride', {
     width: w,
     height: h,
-    deviceScaleFactor: 1,
+    deviceScaleFactor: scale,
     mobile: false,
   });
   await send('Page.navigate', { url: pathToFileURL(file).href });
@@ -195,7 +195,7 @@ for (const [name, w, h, html] of [
     clip: { x: 0, y: 0, width: w, height: h, scale: 1 },
   });
   writeFileSync(path.join(out, `${name}.png`), Buffer.from(data, 'base64'));
-  console.log(`wrote assets/${name}.png (${w}×${h})`);
+  console.log(`wrote assets/${name}.png (${w * scale}×${h * scale})`);
 }
 ws.close();
 chrome.kill();

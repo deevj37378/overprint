@@ -21,7 +21,7 @@ export const hintFor = (state: PlayState): string => {
   if (state.placed.length === 0) return 'Tap a stamp to pick it up';
   const off = differingCells(state);
   if (off > 0) {
-    return `${off} ${off === 1 ? 'square differs' : 'squares differ'} from the proof · tap a print to lift it`;
+    return `${off} ${off === 1 ? 'square differs' : 'squares differ'} from the proof · drag a print to move it`;
   }
-  return 'Tap a printed stamp to lift it back up';
+  return 'Drag a printed stamp to move it, or tap to lift it';
 };

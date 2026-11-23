@@ -30,7 +30,7 @@ const stepFor = (s: PlayState): Step => {
   const blue = s.placed.find((p) => p.stampId === 'blue');
   if (blue && (blue.row !== 1 || blue.rotation % 2 !== 0) && !s.hand) {
     return {
-      hint: 'Not quite. Tap the blue bar on the paper to lift it.',
+      hint: 'Not quite. Drag the blue bar into the middle row, or tap it to lift it.',
       highlight: null,
     };
   }

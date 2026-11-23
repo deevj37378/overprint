@@ -208,3 +208,10 @@ Splash payload: ~85 KB gz JS+CSS (React + renderer), fonts are local woff2 with 
 
 - Closing the 9 open Dependabot PRs with `gh pr close` was blocked by the session's permission
   classifier. Run: `for n in 1 2 3 4 5 6 7 8 9; do gh pr close $n --comment "Pinning dependencies during the hackathon."; done`
+
+### Submission prep (2026-11-23)
+- Tutorial and in-game hints now mention dragging ("Drag the blue bar into the middle row…",
+  "drag a print to move it").
+- `tools/make-art.mjs` renders the icon at 1024×1024 (same 256 artwork, 4× scale), as Reddit asks.
+- Hackathon rules checked: the Devpost entry can be edited until Dec 8, 6 pm PT, so it was
+  submitted early and gets updated with the video and launch-week screenshots later.
