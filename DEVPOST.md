@@ -1,5 +1,36 @@
 # Devpost submission: Overprint
 
+## Form fields (paste these)
+
+| Field | Value |
+|---|---|
+| Project name | Overprint |
+| Tagline | A daily riso-print puzzle: layer coloured ink stamps so their overlaps recreate today's print. |
+| App listing | https://developers.reddit.com/apps/overprint-colors |
+| Test subreddit | https://www.reddit.com/r/SUBREDDIT/ (public, under 200 members) |
+| Demo post | link to the latest daily post in that subreddit |
+| Repository | https://github.com/deevj37378/overprint |
+| Video | YouTube/Vimeo link (public, under 1 minute). Optional, but add it before Dec 8. |
+| Built with | devvit, devvit-web, react, typescript, vite, tailwindcss, hono, redis |
+
+### Testing instructions (paste into the description or the testing field)
+
+1. Open the demo post. The feed card shows today's proof and how many people printed it.
+   Tap **Play**.
+2. First time only, a 20-second tutorial teaches the press. Skip it any time.
+3. Tap a stamp in the tray, then tap the paper to place it (or drag it there). Drag the dashed
+   preview to adjust, tap it again (or **Stamp**) to press. Overlapping inks mix:
+   blue + yellow = green, blue + pink = violet, yellow + pink = orange.
+4. Match the small proof card exactly. Tap or drag a pressed stamp to fix mistakes; Undo works.
+5. The result card shows time, lifts, streak, percentile and the day's leaderboard.
+   **Share to comments** posts a spoiler-free emoji grid under the pinned comment.
+6. **Print Shop** (link under the Play button on the feed card, or on the result card): design your own print, name it, post it.
+   The best community print of the week becomes Sunday's daily.
+7. **Gallery Wall** (next to Print Shop): every daily of the month hangs as a framed print with its solve count.
+
+Difficulty follows the week: Monday 5×5 with two stamps, up to 7×7 with five stamps and a decoy
+on the weekend. A new print is posted automatically at 00:00 UTC.
+
 ## Tagline
 
 A daily riso-print puzzle: layer coloured ink stamps so their overlaps recreate today's print.
