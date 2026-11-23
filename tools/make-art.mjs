@@ -2,7 +2,7 @@
 // SVG/HTML → PNG through the installed Google Chrome (DevTools protocol), using the bundled fonts.
 // Usage: node tools/make-art.mjs   → writes assets/icon.png and assets/banner.png
 
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -195,6 +195,21 @@ for (const [name, w, h, html, scale] of [
     clip: { x: 0, y: 0, width: w, height: h, scale: 1 },
   });
   writeFileSync(path.join(out, `${name}.png`), Buffer.from(data, 'base64'));
+  // Reddit caps the app icon at 500 KB; the grain makes a full-colour PNG ~1.3 MB.
+  // A 256-colour palette (ImageMagick) keeps the look at ~240 KB.
+  if (name === 'icon') {
+    const file = path.join(out, 'icon.png');
+    execFileSync('magick', [
+      file,
+      '-dither',
+      'FloydSteinberg',
+      '-colors',
+      '256',
+      '-define',
+      'png:compression-level=9',
+      `PNG8:${file}`,
+    ]);
+  }
   console.log(`wrote assets/${name}.png (${w * scale}×${h * scale})`);
 }
 ws.close();
