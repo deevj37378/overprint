@@ -26,7 +26,8 @@ export class ApiError extends Error {
   }
 }
 
-type Ok = { status: 'ok' } | { status: 'rejected' };
+type Ok =
+  { status: 'ok' } | { status: 'rejected' } | { status: 'needs-approval' };
 
 const request = async <T extends Ok>(
   path: string,

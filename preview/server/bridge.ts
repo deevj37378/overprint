@@ -9,6 +9,7 @@ import path from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
 import {
   FAKE_USERS,
+  logOutbox,
   previewState,
   resetPreviewState,
   SUBREDDIT,
@@ -120,6 +121,7 @@ const ACTIONS = [
   { id: 'seed', label: 'Add 6 fake players' },
   { id: 'solve', label: 'Mark me solved' },
   { id: 'first-play', label: 'First-ever play' },
+  { id: 'unapproved', label: 'Toggle: Join needs approval' },
 ];
 
 const SEED_NAMES = [
@@ -185,6 +187,15 @@ const runAction = async (
         i % 3
       );
     }
+  } else if (id === 'unapproved') {
+    const state = previewState();
+    state.subscribeNeedsApproval = !state.subscribeNeedsApproval;
+    logOutbox(
+      'subscribe',
+      state.subscribeNeedsApproval
+        ? 'simulating an unapproved app: Join will fall back to the subreddit'
+        : 'simulating an approved app: Join subscribes'
+    );
   } else if (id === 'solve' && me) {
     await solveAs(server, me, postId, 48_000, 1);
   } else if (id === 'first-play' && me) {

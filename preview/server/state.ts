@@ -35,6 +35,8 @@ export type PreviewState = {
   /** Who is making the current request, and from which post. */
   request: { user: FakeUser | null; postId: string | null };
   nextId: number;
+  /** Make subscribeToCurrentSubreddit fail like a playtest / unapproved app. */
+  subscribeNeedsApproval?: boolean;
 };
 
 declare global {

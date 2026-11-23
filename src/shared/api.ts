@@ -104,7 +104,11 @@ export type LeaderboardResponse = {
 };
 
 export type ShareResponse = { status: 'ok'; alreadyShared: boolean };
-export type SubscribeResponse = { status: 'ok' };
+/** `needs-approval`: the app can't subscribe users yet (playtest / unapproved), so the client
+ *  opens the subreddit for Reddit's own Join button. The player is not marked as joined. */
+export type SubscribeResponse =
+  | { status: 'ok' }
+  | { status: 'needs-approval'; subreddit: string; url: string };
 export type PrefsResponse = { status: 'ok'; prefs: Prefs };
 
 /** A stamp the player placed in the Print Shop editor. */

@@ -5,6 +5,7 @@ import {
   type PlayAction,
   type PlayState,
 } from '../../shared/play';
+import type { Cell } from '../../shared/shapes';
 import type { Sheet, Stamp } from '../../shared/sheet';
 
 /** Actions without timestamps; the hook stamps them with the current time. */
@@ -15,6 +16,8 @@ export type PlayCommand =
   | { type: 'press' }
   | { type: 'drop' }
   | { type: 'moveGhost'; dRow: number; dCol: number }
+  | { type: 'dragGhost'; row: number; col: number; grab: Cell }
+  | { type: 'movePlaced'; stampId: string; row: number; col: number }
   | { type: 'undo' }
   | { type: 'clear' }
   | { type: 'restart' }
@@ -28,6 +31,8 @@ const withTime = (command: PlayCommand): PlayAction => {
     case 'tapCell':
       return { ...command, at };
     case 'press':
+      return { ...command, at };
+    case 'movePlaced':
       return { ...command, at };
     default:
       return command;

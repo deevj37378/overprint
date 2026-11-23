@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  clampAnchor,
   currentSheet,
   elapsedMs,
   fitAnchor,
   ghostCells,
   initialPlay,
+  placedAt,
   playReducer,
   type PlayAction,
   type PlayState,
@@ -222,4 +224,167 @@ test('unknown stamps and empty taps are ignored', () => {
     start
   );
   assert.equal(elapsedMs(start, 5000), 0);
+});
+
+// ---- drag to move -------------------------------------------------------------------------
+
+/** Blue bar across the top, yellow bar down the middle column, overlapping at (0, 1). */
+const bothPressed = (): PlayState =>
+  run([
+    { type: 'pick', stampId: 'b', at: 0 },
+    { type: 'tapCell', row: 0, col: 0, at: 0 },
+    { type: 'press', at: 0 },
+    { type: 'pick', stampId: 'y', at: 0 },
+    { type: 'rotate' },
+    { type: 'tapCell', row: 0, col: 1, at: 0 },
+    { type: 'press', at: 0 },
+  ]);
+
+test('dragging the ghost follows the finger, clamps, and is never a lift', () => {
+  let s = run([
+    { type: 'pick', stampId: 'b', at: 0 },
+    { type: 'tapCell', row: 0, col: 0, at: 0 },
+  ]);
+  // Grabbed by its middle cell and dragged down a row.
+  s = playReducer(s, {
+    type: 'dragGhost',
+    row: 1,
+    col: 0,
+    grab: { row: 0, col: 1 },
+  });
+  assert.deepEqual(s.ghost, {
+    anchor: { row: 1, col: 0 },
+    tap: { row: 1, col: 1 },
+  });
+  // Dragged past the bottom-right corner: clamped back onto the paper.
+  s = playReducer(s, {
+    type: 'dragGhost',
+    row: 9,
+    col: 4,
+    grab: { row: 0, col: 1 },
+  });
+  assert.deepEqual(s.ghost?.anchor, { row: 2, col: 0 });
+  assert.deepEqual(s.ghost?.tap, { row: 2, col: 1 });
+  assert.equal(s.lifts, 0);
+  assert.equal(s.placed.length, 0, 'release leaves the ghost, not pressed');
+  assert.equal(s.history.length, 0, 'ghost moves are not undo steps');
+  // Tapping the grabbed cell presses it, as with a tapped ghost.
+  s = playReducer(s, { type: 'tapCell', row: 2, col: 1, at: 0 });
+  assert.deepEqual(s.placed, [{ stampId: 'b', row: 2, col: 0, rotation: 0 }]);
+});
+
+test('dragging the ghost needs a stamp in hand', () => {
+  const start = initialPlay(3, tray, target);
+  assert.equal(
+    playReducer(start, {
+      type: 'dragGhost',
+      row: 0,
+      col: 0,
+      grab: { row: 0, col: 0 },
+    }),
+    start
+  );
+});
+
+test('moving a placed stamp is one lift, and one undo puts it back', () => {
+  let s = run([
+    { type: 'pick', stampId: 'b', at: 0 },
+    { type: 'tapCell', row: 0, col: 0, at: 0 },
+    { type: 'press', at: 0 },
+  ]);
+  const before = s;
+  s = playReducer(s, {
+    type: 'movePlaced',
+    stampId: 'b',
+    row: 2,
+    col: 0,
+    at: 5,
+  });
+  assert.deepEqual(s.placed, [{ stampId: 'b', row: 2, col: 0, rotation: 0 }]);
+  assert.equal(s.lifts, 1);
+  assert.equal(s.lastPressed, 'b', 'plays the press animation again');
+  assert.equal(s.hand, null, 'lands pressed, not in your hand');
+  s = playReducer(s, { type: 'undo' });
+  assert.deepEqual(s.placed, before.placed);
+  assert.equal(s.history.length, before.history.length);
+});
+
+test('moving a placed stamp clamps at the edges; same spot is a no-op', () => {
+  const s = run([
+    { type: 'pick', stampId: 'b', at: 0 },
+    { type: 'tapCell', row: 1, col: 0, at: 0 },
+    { type: 'press', at: 0 },
+  ]);
+  const moved = playReducer(s, {
+    type: 'movePlaced',
+    stampId: 'b',
+    row: -4,
+    col: 3,
+    at: 0,
+  });
+  assert.deepEqual(moved.placed[0], {
+    stampId: 'b',
+    row: 0,
+    col: 0,
+    rotation: 0,
+  });
+  assert.equal(
+    playReducer(s, { type: 'movePlaced', stampId: 'b', row: 1, col: 2, at: 0 }),
+    s,
+    'clamps back to where it already is: nothing changes, no lift'
+  );
+  assert.deepEqual(clampAnchor(3, SHAPES.i3, { row: 7, col: -2 }), {
+    row: 2,
+    col: 0,
+  });
+  assert.equal(clampAnchor(3, SHAPES.i4, { row: 0, col: 0 }), null);
+});
+
+test('on overlap the top stamp is the one that moves, and it stays on top', () => {
+  let s = bothPressed();
+  const top = placedAt(s, 0, 1);
+  assert.equal(top?.stampId, 'y', 'the last pressed stamp is on top');
+  s = playReducer(s, {
+    type: 'movePlaced',
+    stampId: 'y',
+    row: 0,
+    col: 2,
+    at: 0,
+  });
+  assert.deepEqual(
+    s.placed.find((p) => p.stampId === 'b'),
+    { stampId: 'b', row: 0, col: 0, rotation: 0 },
+    'the stamp underneath stays put'
+  );
+  assert.equal(placedAt(s, 1, 2)?.stampId, 'y');
+  s = playReducer(s, {
+    type: 'movePlaced',
+    stampId: 'b',
+    row: 2,
+    col: 0,
+    at: 0,
+  });
+  assert.equal(placedAt(s, 2, 2)?.stampId, 'b', 'a moved stamp lands on top');
+});
+
+test('moving a stamp into place solves the print', () => {
+  let s = run([
+    { type: 'pick', stampId: 'b', at: 0 },
+    { type: 'tapCell', row: 0, col: 0, at: 0 },
+    { type: 'press', at: 0 },
+    { type: 'pick', stampId: 'y', at: 0 },
+    { type: 'rotate' },
+    { type: 'tapCell', row: 0, col: 1, at: 0 },
+    { type: 'press', at: 0 },
+  ]);
+  assert.equal(s.solvedAt, null);
+  s = playReducer(s, {
+    type: 'movePlaced',
+    stampId: 'b',
+    row: 1,
+    col: 0,
+    at: 42,
+  });
+  assert.equal(s.solvedAt, 42);
+  assert.equal(s.lifts, 1);
 });

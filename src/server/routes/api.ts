@@ -36,6 +36,7 @@ import { readStreak } from '../core/streaks';
 import { getUser, setUserFields } from '../core/users';
 import { puzzleKey } from '../../shared/postdata';
 import { shareCommentText } from '../../shared/share';
+import { subredditUrl, subscribeFailure } from '../../shared/subscribe';
 import { DAILY_POST_LIMIT, parseShopStamps } from '../../shared/community';
 import { postCommunityPrint, postedToday } from '../core/community';
 import { readWall } from '../core/wall';
@@ -295,7 +296,17 @@ api.post('/subscribe', async (c) => {
   try {
     const who = await currentPlayer();
     if (!who) return fail(c, 400, 'Log in to join.', 'logged-out');
-    await reddit.subscribeToCurrentSubreddit();
+    try {
+      await reddit.subscribeToCurrentSubreddit();
+    } catch (error) {
+      const name = context.subredditName;
+      if (subscribeFailure(error) !== 'needs-approval' || !name) throw error;
+      return c.json<SubscribeResponse>({
+        status: 'needs-approval',
+        subreddit: name,
+        url: subredditUrl(name),
+      });
+    }
     await setUserFields(who.userId, { subscribed: true });
     return c.json<SubscribeResponse>({ status: 'ok' });
   } catch (error) {

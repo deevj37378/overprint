@@ -66,6 +66,23 @@ button:disabled {
     box-shadow 160ms ease;
 }
 
+/* A stamp being dragged on the paper: raised, with a soft shadow under it. */
+.stamp-lifted {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 9px 7px rgba(40, 25, 10, 0.4));
+}
+
+/* Paper and tray: drags never scroll, bounce or zoom the page (pinch still works elsewhere). */
+.drag-surface {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.drag-surface button {
+  touch-action: none;
+}
+
 @keyframes press-squash {
   0% {
     transform: scale(1.12);
@@ -189,5 +206,8 @@ button:disabled {
   }
   .ghost-pulse {
     animation: none;
+  }
+  .stamp-lifted {
+    transform: none;
   }
 }

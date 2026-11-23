@@ -146,6 +146,10 @@ export const reddit = {
     logOutbox('flair', `u/${opts.username} → "${opts.text ?? ''}"`);
   },
   async subscribeToCurrentSubreddit() {
+    if (previewState().subscribeNeedsApproval) {
+      logOutbox('subscribe', 'refused: app not approved (simulated)');
+      throw new Error('permission not granted for [SUBSCRIBE_TO_SUBREDDIT]');
+    }
     logOutbox(
       'subscribe',
       `u/${context.username ?? '?'} joined r/${SUBREDDIT.name}`

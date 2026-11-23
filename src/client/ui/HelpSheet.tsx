@@ -101,7 +101,8 @@ export const HelpSheet = ({
 
         <ol className="m-0 flex list-none flex-col gap-2 p-0 text-[15px] leading-snug">
           <li>
-            <b>1.</b> Tap a stamp, tap the paper, tap again to press.
+            <b>1.</b> Tap a stamp, tap the paper, tap again to press. Drag a
+            stamp to move it.
           </li>
           <li>
             <b>2.</b> Overlaps mix. The same ink twice adds nothing.

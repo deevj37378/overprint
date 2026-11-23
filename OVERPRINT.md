@@ -32,14 +32,20 @@ A daily riso-print puzzle: layer coloured ink stamps so their overlaps recreate 
 - **Rotation:** stamps can rotate 90° (tap the rotate button). No mirroring.
 - Stamps must sit fully on the paper.
 
-## Interaction (tap-only; this is a Reddit requirement)
+## Interaction (tap first; drag in expanded views)
 
 1. Tap a stamp in the tray to pick it up (it lifts with a little shadow).
 2. Tap the rotate button to turn it (optional).
 3. Tap a cell on the paper: a ghost preview appears anchored there. Tap the same cell again (or "Stamp") to press it down. Tapping a different cell moves the ghost.
 4. Tap a placed stamp to lift it back into your hand.
 5. "Undo" and "Clear" are always available.
-- No drag, swipe, pinch or long-press anywhere. The inline (feed) view only uses taps on buttons.
+- **The inline (feed) view (splash) is tap-only**, a Reddit requirement: buttons only, no drag, swipe, pinch or long-press.
+- **Expanded views (game, tutorial, Print Shop) may also use drag**, on the paper and tray only. Everything drag does must still be possible with taps. A press that moves under 8px is a tap.
+  - Drag the ghost: it follows the finger cell by cell (the grabbed cell stays under it). Release leaves the ghost there, not pressed. Never a lift.
+  - Drag a pressed stamp (the top one where stamps overlap): it lifts with a shadow and presses down again on release. Counts as 1 lift; Undo puts it back in one step.
+  - Drag a stamp from the tray (or a shape from the Print Shop palette) onto the paper: releasing over the paper shows the ghost there; releasing elsewhere cancels.
+  - Stamps always stay fully on the paper (clamped to the nearest valid spot). A soft tick per cell when sound is on, and a 5 ms vibration where supported.
+  - `touch-action: none` on the paper and tray only, so a drag never scrolls the page and pinch-zoom still works elsewhere.
 
 ## Difficulty by weekday (UTC date of the post)
 
@@ -68,7 +74,7 @@ A daily riso-print puzzle: layer coloured ink stamps so their overlaps recreate 
 ## Scoring
 
 - **Time:** from the first stamp pick-up to the solve.
-- **Lifts:** how many times you picked a placed stamp back up, plus undos. Fewer is better.
+- **Lifts:** how many times you picked a placed stamp back up or dragged it somewhere new, plus undos. Fewer is better.
 - **Clean print ✦:** solved with zero lifts.
 - The server **re-verifies** every solve: it regenerates the day's target and checks the submitted placements. Never trust a client "I won".
 - Only the first solve of a day counts for the leaderboard and the streak. Replays are allowed, just not counted.

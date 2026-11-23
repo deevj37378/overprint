@@ -2,6 +2,7 @@
 // three separate, explicit choices (share, join, gallery). Nothing here happens automatically.
 
 import {
+  navigateTo,
   requestExpandedMode,
   showLoginPrompt,
   showToast,
@@ -81,6 +82,7 @@ export const ResultView = ({
   const [shared, setShared] = useState(initial?.shared ?? false);
   const [subscribed, setSubscribed] = useState(me.subscribed);
   const [joining, setJoining] = useState(false);
+  const [joinNote, setJoinNote] = useState<string | null>(null);
 
   useEffect(() => {
     if (!initial && me.solve) {
@@ -108,7 +110,15 @@ export const ResultView = ({
   const join = async () => {
     setJoining(true);
     try {
-      await api.subscribe();
+      const res = await api.subscribe();
+      if (res.status === 'needs-approval') {
+        // The app can't join for you yet: open the subreddit so you can tap Reddit's own Join.
+        // Not marked as joined, since we can't know whether you did.
+        setJoinNote(`Opening r/${res.subreddit}, tap Join there.`);
+        navigateTo(res.url);
+        return;
+      }
+      setJoinNote(null);
       setSubscribed(true);
       showToast({ text: 'Welcome to the print shop!', appearance: 'success' });
     } catch (error) {
@@ -254,6 +264,14 @@ export const ResultView = ({
               >
                 {joining ? 'Joining…' : 'Join the print shop'}
               </button>
+            )}
+            {joinNote && !subscribed && (
+              <p
+                className="w-full text-center text-[13px] font-semibold text-muted"
+                role="status"
+              >
+                {joinNote}
+              </p>
             )}
             <button
               type="button"

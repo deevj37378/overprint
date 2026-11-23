@@ -1,9 +1,11 @@
-// The tap-only play loop as a pure reducer, shared by the game, the tutorial and the Print Shop.
+// The play loop as a pure reducer, shared by the game, the tutorial and the Print Shop.
 //
 //   pick a stamp → tap a cell (ghost appears) → tap the same cell again or "Stamp" (press)
 //   tap a placed stamp → it lifts back into your hand
+//   drag the ghost → it follows (never a lift) · drag a placed stamp → it moves (one lift)
 //
-// Lifts (for scoring) = lifting a placed stamp + each undo + each clear of a non-empty sheet.
+// Lifts (for scoring) = lifting a placed stamp + moving one by drag + each undo + each clear of
+// a non-empty sheet.
 
 import { isSolved } from './puzzle.ts';
 import {
@@ -50,6 +52,17 @@ export type PlayAction =
   | { type: 'press'; at: number }
   | { type: 'drop' }
   | { type: 'moveGhost'; dRow: number; dCol: number }
+  /** Drag the ghost so its anchor sits at (row, col), clamped onto the paper. `grab` is the
+   *  shape cell under the finger; it becomes the ghost's tap cell. */
+  | { type: 'dragGhost'; row: number; col: number; grab: Cell }
+  /** Drag a pressed stamp to a new anchor (clamped). One lift; undo puts it back. */
+  | {
+      type: 'movePlaced';
+      stampId: string;
+      row: number;
+      col: number;
+      at: number;
+    }
   | { type: 'undo' }
   | { type: 'clear' }
   | { type: 'restart' }
@@ -109,6 +122,44 @@ export const fitAnchor = (
     if (fitsOnSheet(size, cells, anchor.row, anchor.col)) return anchor;
   }
   return null;
+};
+
+/**
+ * The nearest anchor to `want` that keeps every cell on the paper (each axis clamped on its
+ * own), or null if the shape can never fit.
+ */
+export const clampAnchor = (
+  size: number,
+  cells: readonly Cell[],
+  want: Cell
+): Cell | null => {
+  if (cells.length === 0) return null;
+  const rows = cells.map((c) => c.row);
+  const cols = cells.map((c) => c.col);
+  // `+ 0` turns -0 into 0 so equality checks stay simple.
+  const lo = { row: -Math.min(...rows) + 0, col: -Math.min(...cols) + 0 };
+  const hi = {
+    row: size - 1 - Math.max(...rows),
+    col: size - 1 - Math.max(...cols),
+  };
+  if (lo.row > hi.row || lo.col > hi.col) return null;
+  return {
+    row: Math.min(hi.row, Math.max(lo.row, want.row)),
+    col: Math.min(hi.col, Math.max(lo.col, want.col)),
+  };
+};
+
+/** The cells a placed stamp covers, in sheet coordinates. */
+export const placementCells = (
+  state: PlayState,
+  placement: Placement
+): Cell[] => {
+  const stamp = stampById(state, placement.stampId);
+  if (!stamp) return [];
+  return shapeCells(stamp.shape, placement.rotation).map((c) => ({
+    row: placement.row + c.row,
+    col: placement.col + c.col,
+  }));
 };
 
 /** Which placed stamp is on top at a cell (the most recently pressed one). */
@@ -175,6 +226,32 @@ const lift = (
   };
 };
 
+/** After a stamp lands: remember it for the press animation and check for a solve. */
+const landed = (
+  next: PlayState,
+  placement: Placement,
+  at: number
+): PlayState => {
+  const solved =
+    next.target !== null &&
+    isSolved(
+      {
+        date: '',
+        number: 0,
+        size: next.size,
+        tray: next.tray,
+        target: next.target,
+        solution: [],
+      },
+      next.placed
+    );
+  return {
+    ...next,
+    lastPressed: placement.stampId,
+    solvedAt: solved ? at : null,
+  };
+};
+
 const press = (state: PlayState, at: number): PlayState => {
   if (!state.hand || !state.ghost) return state;
   const placement: Placement = {
@@ -187,24 +264,7 @@ const press = (state: PlayState, at: number): PlayState => {
     ...state.placed,
     placement,
   ]);
-  const solved =
-    state.target !== null &&
-    isSolved(
-      {
-        date: '',
-        number: 0,
-        size: state.size,
-        tray: state.tray,
-        target: state.target,
-        solution: [],
-      },
-      next.placed
-    );
-  return {
-    ...next,
-    lastPressed: placement.stampId,
-    solvedAt: solved ? at : null,
-  };
+  return landed(next, placement, at);
 };
 
 export const playReducer = (
@@ -273,6 +333,51 @@ export const playReducer = (
       if (!fitsOnSheet(state.size, handCells(state), anchor.row, anchor.col))
         return state;
       return { ...state, ghost: { anchor, tap: anchor } };
+    }
+    case 'dragGhost': {
+      if (!state.hand) return state;
+      const anchor = clampAnchor(state.size, handCells(state), {
+        row: action.row,
+        col: action.col,
+      });
+      if (!anchor) return state;
+      return {
+        ...state,
+        ghost: {
+          anchor,
+          tap: {
+            row: anchor.row + action.grab.row,
+            col: anchor.col + action.grab.col,
+          },
+        },
+      };
+    }
+    case 'movePlaced': {
+      const placement = state.placed.find((p) => p.stampId === action.stampId);
+      const stamp = stampById(state, action.stampId);
+      if (!placement || !stamp) return state;
+      const anchor = clampAnchor(
+        state.size,
+        shapeCells(stamp.shape, placement.rotation),
+        { row: action.row, col: action.col }
+      );
+      if (!anchor) return state;
+      if (anchor.row === placement.row && anchor.col === placement.col)
+        return state;
+      const moved: Placement = { ...placement, ...anchor };
+      const next = commit(state, [
+        ...state.placed.filter((p) => p !== placement),
+        moved,
+      ]);
+      return landed(
+        {
+          ...next,
+          lifts: state.lifts + 1,
+          startedAt: state.startedAt ?? action.at,
+        },
+        moved,
+        action.at
+      );
     }
     case 'undo': {
       const previous = state.history[state.history.length - 1];

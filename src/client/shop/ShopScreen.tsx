@@ -16,6 +16,7 @@ import { SHAPE_IDS, type ShapeId } from '../../shared/shapes';
 import { api, ApiError } from '../lib/api';
 import { thunk, tick } from '../lib/sound';
 import { Controls } from '../play/Controls';
+import { useTrayDrag } from '../play/drag';
 import { Paper } from '../play/Paper';
 import { usePlay, type PlayCommand } from '../play/usePlay';
 import { ChevronIcon } from '../ui/Icons';
@@ -126,18 +127,25 @@ const Editor = ({
   );
   const check = checkPrint(size, stamps);
 
-  const pickShape = (shape: ShapeId) => {
+  const pickShape = (shape: ShapeId): boolean => {
     if (state.placed.length >= MAX_SHOP_STAMPS) {
       showToast(
         `Six stamps is the most a print can hold. Lift one to swap it.`
       );
-      return;
+      return false;
     }
     const id = `e${nextId.current++}`;
     raw({ type: 'setTray', tray: [...state.tray, { id, shape, ink }] });
     raw({ type: 'pick', stampId: id });
     tick();
+    return true;
   };
+
+  // Drag a shape from the palette onto the paper: it lands there as the ghost.
+  const drag = useTrayDrag((item, anchor, grab) => {
+    const shape = SHAPE_IDS.find((id) => id === item.key);
+    if (shape && pickShape(shape)) raw({ type: 'dragGhost', ...anchor, grab });
+  });
 
   const held = state.hand
     ? state.tray.find((s) => s.id === state.hand?.stampId)
@@ -202,14 +210,18 @@ const Editor = ({
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="drag-surface grid grid-cols-5 gap-1.5">
           {SHAPE_IDS.map((shape) => (
             <button
               key={shape}
               type="button"
               data-testid={`shape-${shape}`}
               aria-label={`Pick up a ${INK_NAME[ink].toLowerCase()} ${SHAPE_NAME[shape]} stamp`}
-              onClick={() => pickShape(shape)}
+              {...drag.bind({ key: shape, shape, ink, rotation: 0 })}
+              onClick={() => {
+                if (drag.consumeClick()) return;
+                pickShape(shape);
+              }}
               className={`flex h-12 items-center justify-center rounded-xl border-2 bg-[#fbf8f2] active:scale-95 ${
                 held?.shape === shape && held.ink === ink
                   ? 'border-ink'
@@ -219,6 +231,7 @@ const Editor = ({
               <StampFace shape={shape} ink={ink} size={30} />
             </button>
           ))}
+          {drag.floating}
         </div>
       </section>
 

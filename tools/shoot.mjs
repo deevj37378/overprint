@@ -5,6 +5,11 @@
 //               "steps": [{ "wait": 500 }, { "tap": "[data-testid=stamp-s1]" }, { "eval": "..." },
 //                         { "shot": "mid.png" }] }]
 // Taps dispatch real touch events at the element's centre, like a finger would.
+// Drags: { "drag": { "from": "<selector>" | {x,y}, "to": "<selector>" | {x,y} | {"dx","dy"},
+//                    "steps": 10, "shotBeforeRelease": "mid.png", "cancel": false } }
+//   touchStart at `from`, `steps` touchMoves to `to`, optional screenshot mid-drag, then
+//   touchEnd (or touchCancel). Selectors may end in "@r,c" to aim at cell (r, c) of a
+//   size-n grid element: "[role=grid]@1,2/5".
 
 import { spawn } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -104,7 +109,7 @@ const tap = async (selector) => {
   const box = await evaluate(`(() => {
     const el = document.querySelector(${JSON.stringify(selector)});
     if (!el) return null;
-    el.scrollIntoView({ block: 'center' });
+    el.scrollIntoView({ block: 'nearest' });
     const r = el.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   })()`);
@@ -116,6 +121,55 @@ const tap = async (selector) => {
   });
   await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await sleep(60);
+};
+
+/** A point: {x,y}, a selector's centre, or "<selector>@row,col/size" for a grid cell. */
+const pointOf = async (target) => {
+  if (typeof target === 'object') return target;
+  const [selector, cellSpec] = target.split('@');
+  const box = await evaluate(`(() => {
+    const el = document.querySelector(${JSON.stringify(selector)});
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { left: r.left, top: r.top, width: r.width, height: r.height };
+  })()`);
+  if (!box) throw new Error(`No element for ${selector}`);
+  if (!cellSpec)
+    return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  const [rc, size] = cellSpec.split('/');
+  const [row, col] = rc.split(',').map(Number);
+  const n = Number(size);
+  return {
+    x: box.left + ((col + 0.5) * box.width) / n,
+    y: box.top + ((row + 0.5) * box.height) / n,
+  };
+};
+
+const drag = async ({ from, to, steps = 10, shotBeforeRelease, cancel }) => {
+  const a = await pointOf(from);
+  const b =
+    typeof to === 'object' && 'dx' in to
+      ? { x: a.x + to.dx, y: a.y + (to.dy ?? 0) }
+      : await pointOf(to);
+  await send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [a],
+  });
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    await send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }],
+    });
+    await sleep(16);
+  }
+  await sleep(120);
+  if (shotBeforeRelease) await shot(shotBeforeRelease);
+  await send('Input.dispatchTouchEvent', {
+    type: cancel ? 'touchCancel' : 'touchEnd',
+    touchPoints: [],
+  });
+  await sleep(80);
 };
 
 const key = async (k) => {
@@ -145,6 +199,7 @@ for (const job of jobs) {
     if (step.wait) await sleep(step.wait);
     if (step.tap) await tap(step.tap);
     if (step.key) await key(step.key);
+    if (step.drag) await drag(step.drag);
     if (step.eval)
       console.log('eval →', JSON.stringify(await evaluate(step.eval)));
     if (step.navigate) {

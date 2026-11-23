@@ -35,6 +35,8 @@ type Props = {
   misregister?: boolean;
   colourBlind?: boolean;
   ghost?: GhostView | null;
+  /** A stamp being dragged: drawn raised off the paper with a shadow. */
+  lifted?: GhostView | null;
   bloom?: BloomView | null;
   grid?: boolean;
   /** Interactive cells (the play paper). */
@@ -85,6 +87,7 @@ export const PrintSheet = ({
   misregister = !lite,
   colourBlind = false,
   ghost = null,
+  lifted = null,
   bloom = null,
   grid = false,
   onCellTap,
@@ -286,6 +289,33 @@ export const PrintSheet = ({
               strokeLinecap="round"
             />
           </g>
+        </svg>
+      )}
+
+      {lifted && lifted.cells.length > 0 && (
+        <svg
+          viewBox={`0 0 ${span} ${span}`}
+          className="stamp-lifted pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+          aria-hidden="true"
+        >
+          <g fill={INK_HEX[lifted.ink]} opacity="0.88">
+            {lifted.cells.map(({ row, col }) => (
+              <rect
+                key={`${row}-${col}`}
+                x={col * U}
+                y={row * U}
+                width={U}
+                height={U}
+              />
+            ))}
+          </g>
+          <path
+            d={outline(lifted.cells)}
+            fill="none"
+            stroke={INK_DEEP[lifted.ink]}
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
         </svg>
       )}
 

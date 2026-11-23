@@ -35,7 +35,7 @@ is not ✅.
 - `node tools/shoot.mjs jobs.json` drives local Chrome over CDP for screenshots and taps.
 
 ### Phase 2
-- `src/shared/play.ts`: pure tap-only reducer (pick, ghost, press, lift, undo, clear, keyboard
+- `src/shared/play.ts`: pure play reducer (pick, ghost, press, lift, undo, clear, keyboard
   ghost moves, timing, solve detection) + `play.test.ts`. `src/shared/daily.ts`: launch date,
   numbering, "Preview" labels, post titles.
 - `src/client/ui/PrintSheet.tsx`: riso renderer (one multiplied SVG layer per ink, misregistration,
@@ -161,6 +161,25 @@ Splash payload: ~85 KB gz JS+CSS (React + renderer), fonts are local woff2 with 
   31 frames scroll at 60 fps (p95 17 ms) in headless Chrome.
 - Viewport meta no longer blocks zoom (`maximum-scale`/`user-scalable` removed); buttons keep
   `touch-action: manipulation` so double-tap doesn't zoom during play.
+
+### Drag to move + Join fallback
+- Expanded views (game, tutorial, Print Shop) can drag on the paper and tray; the splash stays
+  tap-only (OVERPRINT.md "Interaction" updated). Everything still works by taps.
+- Reducer (`src/shared/play.ts`): `dragGhost` (absolute, clamped, never a lift, no undo step; the
+  grabbed cell becomes the ghost's tap cell) and `movePlaced` (clamped, 1 lift, one undo step, lands
+  on top, plays the press bloom, can solve). `clampAnchor`, `placementCells`. Tests in play.test.ts.
+- Client (`src/client/play/drag.tsx`, `Paper.tsx`, `Tray.tsx`, Shop palette): Pointer Events,
+  pointer capture only once a press moves ≥ 8px (so taps go through the cells' own click, exactly
+  as before), click swallowed after a drag, `pointercancel` restores. `.drag-surface` sets
+  `touch-action: none` on the paper and tray only. Placed drags draw the stamp raised with a shadow;
+  tray drags show a floating stamp plus the snapping ghost. Tick + `navigator.vibrate(5)` per snap.
+- Tested with CDP touch emulation (`tools/shoot.mjs` now has a `drag` step) at 390×700 and
+  390×844 on tutorial, game and shop: no scroll events during drags, every state as specified.
+- Join the print shop: if `subscribeToCurrentSubreddit` fails with the missing-approval error
+  (`subscribeFailure` in `src/shared/subscribe.ts`, tested), `/api/subscribe` returns
+  `needs-approval` + the subreddit URL; the result card says "Opening r/<name>, tap Join there.",
+  calls `navigateTo`, and does not mark the player as joined. Preview action
+  "Toggle: Join needs approval" simulates it.
 
 ## Decisions
 
